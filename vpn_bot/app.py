@@ -21,10 +21,15 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-// 🔥 КЛЮЧЕВОЕ — fullscreen
-if (tg.requestFullscreen) {
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+if (isMobile && tg.requestFullscreen) {
     tg.requestFullscreen();
 }
+
+// 🔥 КЛЮЧЕВОЕ — fullscreen
+
+
 
 tg.setHeaderColor('#0F172A');
 tg.setBackgroundColor('#0F172A');
@@ -272,3 +277,4 @@ function showPage(pageId, el) {
 </html>
 
 """
+
