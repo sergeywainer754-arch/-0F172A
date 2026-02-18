@@ -3,7 +3,8 @@ from aiogram import Bot, Dispatcher
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
 
-TOKEN = "8577505134:AAEu_y1ndfGEJ-YYlKgWSyuHVIbEdqfRUYU"
+import os
+TOKEN = os.environ.get("BOT_TOKEN")
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -77,4 +78,5 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
+
     asyncio.run(main())
