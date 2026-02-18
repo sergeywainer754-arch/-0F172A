@@ -21,13 +21,22 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
-tg.setHeaderColor("#0f172a");
-tg.setBackgroundColor("#0f172a");
+// 🔥 КЛЮЧЕВОЕ — fullscreen
+if (tg.requestFullscreen) {
+    tg.requestFullscreen();
+}
+
+tg.setHeaderColor('#0F172A');
+tg.setBackgroundColor('#0F172A');
+
+document.body.style.margin = '0';
+document.documentElement.style.margin = '0';
 
 function updateHeight() {
-    document.documentElement.style.height = tg.viewportHeight + "px";
-    document.body.style.height = tg.viewportHeight + "px";
+    document.documentElement.style.height = tg.viewportHeight + 'px';
+    document.body.style.height = tg.viewportHeight + 'px';
 }
+
 updateHeight();
 tg.onEvent('viewportChanged', updateHeight);
 </script>
@@ -261,4 +270,5 @@ function showPage(pageId, el) {
 
 </body>
 </html>
+
 """
