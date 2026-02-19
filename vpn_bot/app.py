@@ -13,7 +13,6 @@ async def index():
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>ROCKET VPN</title>
-
 <style>
 :root {
   --bg:            #1c1c1c;
@@ -29,11 +28,10 @@ async def index():
   --blue:          #2AABEE;
   --text:          #FFFFFF;
   --text2:         #AAAAAA;
-  --text3:         #4d4d4d;
-  --divider:       rgba(255,255,255,0.06);
+  --text3:         #4a4a4a;
+  --divider:       rgba(255,255,255,0.07);
   --r:             18px;
   --r2:            22px;
-  --nav-height:    64px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -43,37 +41,42 @@ html, body {
   font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text);
   font-size: 15px;
-  height: 100%;
   overflow: hidden;
+  height: 100%;
 }
 
+/* Корневой контейнер — занимает ровно экран */
 #app {
   position: fixed;
-  inset: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   display: flex;
   flex-direction: column;
+  background: var(--bg);
 }
 
-.scroll-area {
+/* Только эта зона скроллится — шапка/навбар остаются на месте */
+#scrollArea {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding-bottom: 12px;
+  overscroll-behavior-y: contain;
+  padding-bottom: 16px;
+  /* padding-top ставится через JS под высоту шапки Telegram */
 }
 
 .page { display: none; }
-.page.active { display: block; animation: fadeUp .18s ease; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+.page.active { display: block; animation: fadeIn .15s ease; }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
 .spacer { height: 10px; }
 
+/* SECTION */
 .section-label {
   padding: 10px 16px 5px;
-  font-size: 12px; font-weight: 600;
+  font-size: 11px; font-weight: 600;
   color: var(--text2);
-  text-transform: uppercase; letter-spacing: 0.6px;
+  text-transform: uppercase; letter-spacing: 0.7px;
 }
 .section {
   background: var(--card);
@@ -81,28 +84,29 @@ html, body {
   margin: 6px 12px;
   overflow: hidden;
 }
-.section > .section-label { padding: 14px 16px 6px; }
+.section > .section-label { padding: 13px 16px 5px; }
 
+/* KEY CARD */
 .key-card {
   background: var(--card);
   border-radius: var(--r2);
   margin: 6px 12px;
   overflow: hidden;
 }
-.key-card-top { padding: 14px 16px; display: flex; align-items: center; gap: 13px; }
+.key-card-top { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
 .key-icon {
-  width: 46px; height: 46px; border-radius: 15px;
+  width: 46px; height: 46px; border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
   font-size: 21px; flex-shrink: 0;
 }
-.key-icon.active-icon  { background: rgba(76,217,100,0.15); }
-.key-icon.expired-icon { background: rgba(255,59,48,0.12); }
+.key-icon.active-icon  { background: rgba(76,217,100,0.13); }
+.key-icon.expired-icon { background: rgba(255,59,48,0.11); }
 .key-info { flex: 1; min-width: 0; }
-.key-id   { font-size: 16px; font-weight: 700; }
+.key-id { font-size: 16px; font-weight: 700; }
 .key-meta { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 7px; margin-top: 4px; }
 .key-badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 30px; }
 .badge-active  { background: rgba(76,217,100,0.15); color: var(--green); }
-.badge-expired { background: rgba(255,59,48,0.12);  color: var(--red); }
+.badge-expired { background: rgba(255,59,48,0.12); color: var(--red); }
 .badge-vless   { background: var(--accent-soft); color: var(--accent2); font-size: 10px; padding: 2px 8px; border-radius: 30px; font-weight: 600; }
 .key-status { display: flex; align-items: center; gap: 5px; font-size: 13px; margin-top: 5px; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
@@ -115,31 +119,31 @@ html, body {
   flex: 1; padding: 12px;
   border-radius: var(--r); border: none;
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer; transition: opacity 0.15s;
 }
-.key-btn:active { transform: scale(0.96); }
+.key-btn:active { opacity: 0.75; }
 .btn-ghost  { background: var(--card2); color: var(--text); }
 .btn-accent { background: var(--accent); color: #fff; }
-.btn-accent:active { background: var(--accent2); }
 .btn-danger-row {
   display: block; background: rgba(255,59,48,0.1); color: var(--red);
   border: none; margin: 0 12px 12px; width: calc(100% - 24px);
   padding: 12px; border-radius: var(--r);
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
 }
-.btn-danger-row:active { transform: scale(0.98); }
+.btn-danger-row:active { opacity: 0.75; }
 
 .main-btn {
   width: calc(100% - 24px); margin: 6px 12px 10px; padding: 15px;
   border-radius: var(--r2); border: none;
   background: var(--accent); color: #fff;
   font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s;
+  cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.main-btn:active { transform: scale(0.98); background: var(--accent2); }
+.main-btn:active { opacity: 0.85; }
 
+/* BANNER */
 .buy-banner {
   margin: 6px 12px;
   background: linear-gradient(135deg, #2d1f66, #1e1450);
@@ -148,12 +152,13 @@ html, body {
   position: relative; overflow: hidden;
 }
 .buy-banner::after {
-  content: '🚀'; position: absolute; right: 16px; top: 50%;
-  transform: translateY(-50%); font-size: 52px; opacity: 0.12; pointer-events: none;
+  content: '🚀'; position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%); font-size: 50px; opacity: 0.12; pointer-events: none;
 }
 .buy-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
 .buy-banner p  { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 14px; line-height: 1.5; }
 
+/* BALANCE */
 .balance-block {
   margin: 0 12px;
   background: linear-gradient(135deg, #2d1f66, #1e1450);
@@ -162,20 +167,20 @@ html, body {
   position: relative; overflow: hidden;
 }
 .balance-block::after {
-  content: '🚀'; position: absolute; right: 16px; top: 50%;
-  transform: translateY(-50%); font-size: 50px; opacity: 0.1; pointer-events: none;
+  content: '🚀'; position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%); font-size: 48px; opacity: 0.1; pointer-events: none;
 }
 .balance-lbl { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
 .balance-val { font-size: 38px; font-weight: 700; line-height: 1; }
-.balance-val span { font-size: 22px; color: var(--accent2); margin-right: 4px; }
+.balance-val span { font-size: 22px; color: var(--accent2); margin-right: 3px; }
 
+/* LIST */
 .list-item {
   display: flex; align-items: center; padding: 12px 16px; gap: 13px;
-  cursor: pointer; border-bottom: 1px solid var(--divider);
-  transition: background 0.1s;
+  border-bottom: 1px solid var(--divider);
 }
 .list-item:last-child { border-bottom: none; }
-.list-item:active { background: rgba(255,255,255,0.04); }
+.list-item:active { background: rgba(255,255,255,0.03); }
 .li-icon {
   width: 40px; height: 40px; border-radius: 13px;
   display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
@@ -187,19 +192,20 @@ html, body {
 .li-content { flex: 1; min-width: 0; }
 .li-title { font-size: 15px; font-weight: 500; }
 .li-sub   { font-size: 13px; color: var(--text2); margin-top: 2px; }
-.li-right { display: flex; align-items: center; gap: 6px; color: var(--text2); }
+.li-right { display: flex; align-items: center; gap: 6px; }
 .li-value { font-size: 15px; font-weight: 600; }
 .li-value.income  { color: var(--green); }
 .li-value.expense { color: var(--red); }
-.li-chevron { color: var(--text3); font-size: 18px; line-height: 1; }
+.li-chevron { color: var(--text3); font-size: 20px; line-height: 1; }
 
+/* AMOUNT */
 .amount-wrap {
   margin: 0 16px 12px; background: #222; border-radius: var(--r);
   display: flex; align-items: center; padding: 0 14px;
   border: 1.5px solid transparent; transition: border-color 0.2s;
 }
 .amount-wrap:focus-within { border-color: var(--accent); }
-.amount-sym   { font-size: 22px; font-weight: 700; color: var(--accent2); margin-right: 6px; }
+.amount-sym { font-size: 22px; font-weight: 700; color: var(--accent2); margin-right: 6px; }
 .amount-input {
   background: transparent; border: none; outline: none;
   font-family: 'Inter', sans-serif; font-size: 28px; font-weight: 700;
@@ -207,13 +213,14 @@ html, body {
 }
 .quick-row { display: flex; gap: 7px; padding: 0 16px 14px; }
 .q-btn {
-  flex: 1; padding: 10px 4px; border-radius: var(--r);
+  flex: 1; padding: 10px 4px; border-radius: 12px;
   border: 1px solid var(--divider); background: #222; color: var(--text2);
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
   cursor: pointer; transition: all 0.15s;
 }
 .q-btn.sel { border-color: var(--accent); color: var(--accent2); background: var(--accent-soft); }
 
+/* REF */
 .ref-stats { display: grid; grid-template-columns: 1fr 1fr; }
 .ref-stat  { padding: 18px 16px; text-align: center; border-right: 1px solid var(--divider); }
 .ref-stat:last-child { border-right: none; }
@@ -228,10 +235,11 @@ html, body {
   background: var(--accent); color: #fff; border: none;
   border-radius: 30px; padding: 7px 14px;
   font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
-  cursor: pointer; flex-shrink: 0; transition: all 0.15s;
+  cursor: pointer; flex-shrink: 0;
 }
-.copy-pill:active { background: var(--accent2); transform: scale(0.96); }
+.copy-pill:active { opacity: 0.8; }
 
+/* STEPS */
 .step-item {
   display: flex; align-items: flex-start; gap: 13px;
   padding: 12px 16px; border-bottom: 1px solid var(--divider);
@@ -247,6 +255,7 @@ html, body {
 .step-text { font-size: 14px; color: var(--text2); line-height: 1.6; padding-top: 3px; }
 .step-text strong { color: var(--text); }
 
+/* FAQ */
 .faq-item { border-bottom: 1px solid var(--divider); overflow: hidden; }
 .faq-item:last-child { border-bottom: none; }
 .faq-q { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; cursor: pointer; gap: 12px; }
@@ -260,48 +269,58 @@ html, body {
 }
 .faq-item.open .faq-chevron { transform: rotate(180deg); background: var(--accent-soft); color: var(--accent2); }
 .faq-ans { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-.faq-item.open .faq-ans { max-height: 200px; }
+.faq-item.open .faq-ans { max-height: 300px; }
 .faq-ans-inner { padding: 0 16px 14px; font-size: 14px; color: var(--text2); line-height: 1.65; }
 
-/* ══════════════════════════════════════
-   BOTTOM NAV — компактная, как у AID APP
-   ══════════════════════════════════════ */
+/* ══════════════════════════════
+   BOTTOM NAV — стиль AID APP
+   Иконки в кружках с обводкой,
+   группа по центру, не во весь экран
+   ══════════════════════════════ */
 .bottom-nav {
   flex-shrink: 0;
-  height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
-  background: #161616;
+  background: #141414;
   border-top: 1px solid rgba(255,255,255,0.08);
   display: flex;
-  align-items: flex-start;
   justify-content: center;
-  padding-top: 8px;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  align-items: flex-start;
+  padding-top: 10px;
+  padding-bottom: env(safe-area-inset-bottom, 10px);
 }
 
-/* Группа кнопок — по центру, не на весь экран */
+/* Группа кнопок — фиксированная ширина по центру */
 .nav-inner {
   display: flex;
-  width: min(320px, 88vw);
   justify-content: space-between;
   align-items: flex-start;
+  width: min(340px, 90vw);
 }
 
 .nav-btn {
   background: none; border: none;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  cursor: pointer; padding: 4px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer;
   font-family: 'Inter', sans-serif;
   -webkit-tap-highlight-color: transparent;
-  position: relative;
+  padding: 0 8px 8px;
+  min-width: 56px;
 }
 
-.nav-icon {
-  color: var(--text3);
+/* Иконка в кружке с обводкой — как у AID */
+.nav-icon-wrap {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text3);
   display: flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px;
-  transition: color 0.2s;
+  color: var(--text3);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  background: transparent;
 }
-.nav-btn.active .nav-icon { color: var(--accent2); }
+.nav-btn.active .nav-icon-wrap {
+  border-color: var(--accent2);
+  color: var(--accent2);
+  background: var(--accent-soft);
+}
 
 .nav-label {
   font-size: 10px; font-weight: 500;
@@ -311,23 +330,10 @@ html, body {
 }
 .nav-btn.active .nav-label { color: var(--accent2); }
 
-/* точка сверху у активной */
-.nav-dot {
-  position: absolute;
-  top: -2px;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--accent2);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.nav-btn.active .nav-dot { opacity: 1; }
-
 /* TOAST */
 .toast {
   position: fixed;
-  bottom: calc(var(--nav-height) + 12px);
-  left: 50%;
+  bottom: 90px; left: 50%;
   transform: translateX(-50%) translateY(16px);
   background: #3a3a3a; color: #fff;
   padding: 10px 22px; border-radius: 30px;
@@ -345,7 +351,8 @@ html, body {
 
 <div id="app">
 
-  <div class="scroll-area" id="scrollArea">
+  <!-- SCROLL AREA -->
+  <div id="scrollArea">
 
     <!-- VPN -->
     <div id="vpnPage" class="page active">
@@ -524,57 +531,53 @@ html, body {
       <div class="spacer"></div>
     </div>
 
-  </div><!-- /scroll-area -->
+  </div><!-- /scrollArea -->
 
   <!-- BOTTOM NAV -->
   <nav class="bottom-nav">
     <div class="nav-inner">
 
-      <button onclick="showPage('vpnPage',this)" class="nav-btn active">
-        <div class="nav-dot"></div>
-        <div class="nav-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2.5C12 2.5 6.5 7.5 6.5 13a5.5 5.5 0 0 0 11 0c0-5.5-5.5-10.5-5.5-10.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <button class="nav-btn active" onclick="showPage('vpnPage',this)">
+        <div class="nav-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2.5C12 2.5 6.5 7.5 6.5 13a5.5 5.5 0 0 0 11 0c0-5.5-5.5-10.5-5.5-10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
             <circle cx="12" cy="13" r="2" fill="currentColor"/>
-            <path d="M9.8 18.8L8.5 20.5M14.2 18.8L15.5 20.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M9.8 18.5L8.5 20.5M14.2 18.5L15.5 20.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
         </div>
         <span class="nav-label">VPN</span>
       </button>
 
-      <button onclick="showPage('walletPage',this)" class="nav-btn">
-        <div class="nav-dot"></div>
-        <div class="nav-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <rect x="2.5" y="6.5" width="19" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M2.5 10.5h19" stroke="currentColor" stroke-width="1.6"/>
-            <rect x="15.5" y="13.5" width="3.5" height="2" rx="1" fill="currentColor"/>
-            <path d="M6.5 6.5V5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.6"/>
+      <button class="nav-btn" onclick="showPage('walletPage',this)">
+        <div class="nav-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <rect x="2.5" y="6.5" width="19" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M2.5 10.5h19" stroke="currentColor" stroke-width="1.8"/>
+            <rect x="15.5" y="13" width="3.5" height="2.5" rx="1.2" fill="currentColor"/>
+            <path d="M6.5 6.5V5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8"/>
           </svg>
         </div>
         <span class="nav-label">Кошелёк</span>
       </button>
 
-      <button onclick="showPage('refPage',this)" class="nav-btn">
-        <div class="nav-dot"></div>
-        <div class="nav-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.6"/>
-            <circle cx="17" cy="9" r="2.3" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            <path d="M17 14.5c2 .3 3.5 1.8 3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <button class="nav-btn" onclick="showPage('refPage',this)">
+        <div class="nav-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
+            <circle cx="17" cy="9" r="2.3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M17 14.5c2 .3 3.5 1.8 3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
         </div>
         <span class="nav-label">Реф. прог.</span>
       </button>
 
-      <button onclick="showPage('faqPage',this)" class="nav-btn">
-        <div class="nav-dot"></div>
-        <div class="nav-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2.2-2.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-            <circle cx="12" cy="17.5" r="0.8" fill="currentColor"/>
+      <button class="nav-btn" onclick="showPage('faqPage',this)">
+        <div class="nav-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2.2-2.5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="17.5" r="0.9" fill="currentColor"/>
           </svg>
         </div>
         <span class="nav-label">FAQ</span>
@@ -588,25 +591,36 @@ html, body {
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
-tg.expand();
-if (tg.requestFullscreen) tg.requestFullscreen();
+
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+if (isMobile) {
+  // На телефонах — fullscreen
+  tg.expand();
+  if (tg.requestFullscreen) tg.requestFullscreen();
+} else {
+  // На ПК — просто expand, без fullscreen
+  tg.expand();
+}
+
 tg.setHeaderColor('#1c1c1c');
 tg.setBackgroundColor('#1c1c1c');
 
 function applyLayout() {
   const contentTop = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
   const safeTop    = (tg.safeAreaInset        && tg.safeAreaInset.top)        || 0;
-  const top = Math.max(contentTop, safeTop);
+  // Отступ сверху = высота шапки Telegram (кнопки Закрыть / три точки)
+  const topPad = Math.max(contentTop, safeTop);
+  document.getElementById('scrollArea').style.paddingTop = (topPad + 8) + 'px';
 
-  document.getElementById('scrollArea').style.paddingTop = (top + 8) + 'px';
-
+  // Высота окна — берём стабильную
   const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
   document.getElementById('app').style.height = h + 'px';
 }
 
 document.addEventListener('DOMContentLoaded', applyLayout);
-tg.onEvent('viewportChanged',       applyLayout);
-tg.onEvent('safeAreaChanged',       applyLayout);
+tg.onEvent('viewportChanged',        applyLayout);
+tg.onEvent('safeAreaChanged',        applyLayout);
 tg.onEvent('contentSafeAreaChanged', applyLayout);
 
 function showPage(id, el) {
