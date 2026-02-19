@@ -40,27 +40,29 @@ tg.setHeaderColor('#1c1c1c');
 tg.setBackgroundColor('#1c1c1c');
 
 function updateLayout() {
-    const safeTop = tg.safeAreaInset?.top || 0;
-    const contentSafeTop = tg.contentSafeAreaInset?.top || 0;
 
-    const totalTop = Math.max(safeTop, contentSafeTop);
+    const safeTop = tg.safeAreaInset ? tg.safeAreaInset.top : 0;
+    const contentTop = tg.contentSafeAreaInset ? tg.contentSafeAreaInset.top : 0;
 
-    const container = document.querySelector('.container');
+    // 👇 вот тут регулируем высоту
+    const topPadding = safeTop + contentTop + 28;
 
-    // Добавляем безопасный отступ сверху
-    container.style.paddingTop = (totalTop + 32) + 'px';
+    document.querySelector('.container').style.paddingTop = topPadding + 'px';
 
-    // Фиксим высоту
-    const height = tg.viewportStableHeight || tg.viewportHeight;
-    if (height) {
-        document.documentElement.style.height = height + 'px';
-        document.body.style.height = height + 'px';
+    const h = tg.viewportStableHeight || tg.viewportHeight;
+    if (h) {
+        document.documentElement.style.height = h + 'px';
+        document.body.style.height = h + 'px';
     }
 }
 
 window.addEventListener('DOMContentLoaded', updateLayout);
 tg.onEvent('viewportChanged', updateLayout);
 tg.onEvent('safeAreaChanged', updateLayout);
+
+setTimeout(updateLayout, 300);
+setTimeout(updateLayout, 800);
+
 </script>
 
 <title>ROCKET VPN</title>
@@ -609,6 +611,7 @@ function showToast(msg) {
 </body>
 </html>
 """
+
 
 
 
