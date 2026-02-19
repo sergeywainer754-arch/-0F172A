@@ -12,37 +12,8 @@ async def index():
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<script>
-const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
-
-// Fullscreen для мобильных
-if (tg.requestFullscreen) tg.requestFullscreen();
-
-tg.setHeaderColor('#1c1c1c');
-tg.setBackgroundColor('#1c1c1c');
-
-function updateLayout() {
-  const safeTop    = (tg.safeAreaInset        && tg.safeAreaInset.top)        || 0;
-  const contentTop = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
-  const topPad     = Math.max(safeTop, contentTop);
-
-  const container = document.querySelector('.container');
-  if (container) container.style.paddingTop = (topPad + 8) + 'px';
-
-  const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
-  document.documentElement.style.setProperty('--vh', h + 'px');
-}
-
-document.addEventListener('DOMContentLoaded', updateLayout);
-tg.onEvent('viewportChanged',  updateLayout);
-tg.onEvent('safeAreaChanged',  updateLayout);
-tg.onEvent('contentSafeAreaChanged', updateLayout);
-</script>
-
 <title>ROCKET VPN</title>
+
 <style>
 :root {
   --bg:            #1c1c1c;
@@ -58,84 +29,83 @@ tg.onEvent('contentSafeAreaChanged', updateLayout);
   --blue:          #2AABEE;
   --text:          #FFFFFF;
   --text2:         #AAAAAA;
-  --text3:         #555555;
+  --text3:         #4d4d4d;
   --divider:       rgba(255,255,255,0.06);
-  --r:             20px;
-  --r2:            24px;
-  --nav-h:         calc(60px + env(safe-area-inset-bottom, 0px));
-  --vh:            100vh;
+  --r:             18px;
+  --r2:            22px;
+  --nav-height:    64px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-html { height: var(--vh); overflow: hidden; }
-
-body {
-  height: var(--vh);
+html, body {
   background: var(--bg);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text);
   font-size: 15px;
+  height: 100%;
   overflow: hidden;
 }
 
-/* LAYOUT */
-.container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding-bottom: var(--nav-h);
-  height: var(--vh);
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-area {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  padding-bottom: 12px;
 }
 
 .page { display: none; }
-.page.active { display: block; animation: fadeUp 0.2s ease; }
-@keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+.page.active { display: block; animation: fadeUp .18s ease; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
 
-.spacer { height: 12px; }
+.spacer { height: 10px; }
 
-/* SECTION */
 .section-label {
   padding: 10px 16px 5px;
-  font-size: 13px; font-weight: 600;
+  font-size: 12px; font-weight: 600;
   color: var(--text2);
-  text-transform: uppercase; letter-spacing: 0.5px;
+  text-transform: uppercase; letter-spacing: 0.6px;
 }
 .section {
   background: var(--card);
   border-radius: var(--r2);
-  margin: 8px 12px;
+  margin: 6px 12px;
   overflow: hidden;
 }
-.section .section-label { padding: 14px 16px 6px; }
+.section > .section-label { padding: 14px 16px 6px; }
 
-/* KEY CARD */
 .key-card {
   background: var(--card);
   border-radius: var(--r2);
-  margin: 8px 12px;
+  margin: 6px 12px;
   overflow: hidden;
 }
-.key-card-top { padding: 16px; display: flex; align-items: center; gap: 13px; }
+.key-card-top { padding: 14px 16px; display: flex; align-items: center; gap: 13px; }
 .key-icon {
-  width: 48px; height: 48px; border-radius: 16px;
+  width: 46px; height: 46px; border-radius: 15px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px; flex-shrink: 0;
+  font-size: 21px; flex-shrink: 0;
 }
 .key-icon.active-icon  { background: rgba(76,217,100,0.15); }
 .key-icon.expired-icon { background: rgba(255,59,48,0.12); }
 .key-info { flex: 1; min-width: 0; }
 .key-id   { font-size: 16px; font-weight: 700; }
-.key-meta { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.key-meta { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 7px; margin-top: 4px; }
 .key-badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 30px; }
 .badge-active  { background: rgba(76,217,100,0.15); color: var(--green); }
 .badge-expired { background: rgba(255,59,48,0.12);  color: var(--red); }
 .badge-vless   { background: var(--accent-soft); color: var(--accent2); font-size: 10px; padding: 2px 8px; border-radius: 30px; font-weight: 600; }
 .key-status { display: flex; align-items: center; gap: 5px; font-size: 13px; margin-top: 5px; }
-.status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .dot-green { background: var(--green); }
 .dot-red   { background: var(--red); animation: blink 1.4s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
@@ -170,45 +140,44 @@ body {
 }
 .main-btn:active { transform: scale(0.98); background: var(--accent2); }
 
-/* BANNERS */
 .buy-banner {
-  margin: 8px 12px;
+  margin: 6px 12px;
   background: linear-gradient(135deg, #2d1f66, #1e1450);
-  border-radius: var(--r2); padding: 22px 18px;
+  border-radius: var(--r2); padding: 20px 18px;
   border: 1px solid var(--accent-border);
   position: relative; overflow: hidden;
 }
 .buy-banner::after {
-  content: '🚀'; position: absolute; right: 18px; top: 50%;
-  transform: translateY(-50%); font-size: 56px; opacity: 0.12; pointer-events: none;
+  content: '🚀'; position: absolute; right: 16px; top: 50%;
+  transform: translateY(-50%); font-size: 52px; opacity: 0.12; pointer-events: none;
 }
-.buy-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-.buy-banner p  { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 16px; line-height: 1.5; }
+.buy-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 5px; }
+.buy-banner p  { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 14px; line-height: 1.5; }
 
 .balance-block {
-  margin: 0 12px 0;
+  margin: 0 12px;
   background: linear-gradient(135deg, #2d1f66, #1e1450);
-  border-radius: var(--r2); padding: 24px 20px;
+  border-radius: var(--r2); padding: 22px 20px;
   border: 1px solid var(--accent-border);
   position: relative; overflow: hidden;
 }
 .balance-block::after {
-  content: '🚀'; position: absolute; right: 18px; top: 50%;
-  transform: translateY(-50%); font-size: 52px; opacity: 0.1; pointer-events: none;
+  content: '🚀'; position: absolute; right: 16px; top: 50%;
+  transform: translateY(-50%); font-size: 50px; opacity: 0.1; pointer-events: none;
 }
-.balance-lbl { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
-.balance-val { font-size: 40px; font-weight: 700; line-height: 1; }
-.balance-val span { font-size: 24px; color: var(--accent2); margin-right: 4px; }
+.balance-lbl { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 5px; }
+.balance-val { font-size: 38px; font-weight: 700; line-height: 1; }
+.balance-val span { font-size: 22px; color: var(--accent2); margin-right: 4px; }
 
-/* LIST */
 .list-item {
-  display: flex; align-items: center; padding: 13px 16px; gap: 13px;
-  cursor: pointer; transition: background 0.1s; border-bottom: 1px solid var(--divider);
+  display: flex; align-items: center; padding: 12px 16px; gap: 13px;
+  cursor: pointer; border-bottom: 1px solid var(--divider);
+  transition: background 0.1s;
 }
 .list-item:last-child { border-bottom: none; }
 .list-item:active { background: rgba(255,255,255,0.04); }
 .li-icon {
-  width: 40px; height: 40px; border-radius: 14px;
+  width: 40px; height: 40px; border-radius: 13px;
   display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
 }
 .li-icon.purple { background: var(--accent-soft); }
@@ -222,9 +191,8 @@ body {
 .li-value { font-size: 15px; font-weight: 600; }
 .li-value.income  { color: var(--green); }
 .li-value.expense { color: var(--red); }
-.li-chevron { color: var(--text3); font-size: 14px; }
+.li-chevron { color: var(--text3); font-size: 18px; line-height: 1; }
 
-/* AMOUNT */
 .amount-wrap {
   margin: 0 16px 12px; background: #222; border-radius: var(--r);
   display: flex; align-items: center; padding: 0 14px;
@@ -242,15 +210,14 @@ body {
   flex: 1; padding: 10px 4px; border-radius: var(--r);
   border: 1px solid var(--divider); background: #222; color: var(--text2);
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: all 0.15s; text-align: center;
+  cursor: pointer; transition: all 0.15s;
 }
 .q-btn.sel { border-color: var(--accent); color: var(--accent2); background: var(--accent-soft); }
 
-/* REF */
 .ref-stats { display: grid; grid-template-columns: 1fr 1fr; }
-.ref-stat  { padding: 20px 16px; text-align: center; border-right: 1px solid var(--divider); }
+.ref-stat  { padding: 18px 16px; text-align: center; border-right: 1px solid var(--divider); }
 .ref-stat:last-child { border-right: none; }
-.ref-stat-val { font-size: 28px; font-weight: 700; color: var(--accent2); margin-bottom: 4px; }
+.ref-stat-val { font-size: 26px; font-weight: 700; color: var(--accent2); margin-bottom: 4px; }
 .ref-stat-lbl { font-size: 12px; color: var(--text2); }
 .ref-link-row {
   display: flex; align-items: center; margin: 0 16px 14px; background: #222;
@@ -265,10 +232,9 @@ body {
 }
 .copy-pill:active { background: var(--accent2); transform: scale(0.96); }
 
-/* STEPS */
 .step-item {
   display: flex; align-items: flex-start; gap: 13px;
-  padding: 13px 16px; border-bottom: 1px solid var(--divider);
+  padding: 12px 16px; border-bottom: 1px solid var(--divider);
 }
 .step-item:last-child { border-bottom: none; }
 .step-circle {
@@ -281,16 +247,15 @@ body {
 .step-text { font-size: 14px; color: var(--text2); line-height: 1.6; padding-top: 3px; }
 .step-text strong { color: var(--text); }
 
-/* FAQ */
 .faq-item { border-bottom: 1px solid var(--divider); overflow: hidden; }
 .faq-item:last-child { border-bottom: none; }
-.faq-q { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; gap: 12px; }
+.faq-q { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; cursor: pointer; gap: 12px; }
 .faq-q:active { background: rgba(255,255,255,0.03); }
 .faq-q-text { font-size: 15px; font-weight: 500; }
 .faq-chevron {
   width: 22px; height: 22px; border-radius: 50%; background: var(--card2);
   display: flex; align-items: center; justify-content: center;
-  color: var(--text2); font-size: 11px; flex-shrink: 0;
+  color: var(--text2); font-size: 10px; flex-shrink: 0;
   transition: transform 0.25s, background 0.2s;
 }
 .faq-item.open .faq-chevron { transform: rotate(180deg); background: var(--accent-soft); color: var(--accent2); }
@@ -298,69 +263,77 @@ body {
 .faq-item.open .faq-ans { max-height: 200px; }
 .faq-ans-inner { padding: 0 16px 14px; font-size: 14px; color: var(--text2); line-height: 1.65; }
 
-/* ============ BOTTOM NAV ============ */
+/* ══════════════════════════════════════
+   BOTTOM NAV — компактная, как у AID APP
+   ══════════════════════════════════════ */
 .bottom-nav {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  height: var(--nav-h);
-  background: #141414;
-  border-top: 1px solid rgba(255,255,255,0.07);
+  flex-shrink: 0;
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+  background: #161616;
+  border-top: 1px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: flex-start;
-  justify-content: space-around;
-  padding-top: 6px;
+  justify-content: center;
+  padding-top: 8px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  z-index: 100;
+}
+
+/* Группа кнопок — по центру, не на весь экран */
+.nav-inner {
+  display: flex;
+  width: min(320px, 88vw);
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .nav-btn {
   background: none; border: none;
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  cursor: pointer; padding: 6px 12px;
-  position: relative; flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  cursor: pointer; padding: 4px 12px;
   font-family: 'Inter', sans-serif;
-  transition: none;
   -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
 .nav-icon {
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 10px;
-  transition: background 0.2s;
   color: var(--text3);
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  transition: color 0.2s;
 }
-.nav-btn.active .nav-icon {
-  color: var(--accent2);
-}
+.nav-btn.active .nav-icon { color: var(--accent2); }
 
 .nav-label {
   font-size: 10px; font-weight: 500;
   color: var(--text3);
   transition: color 0.2s;
-  line-height: 1;
+  white-space: nowrap;
 }
 .nav-btn.active .nav-label { color: var(--accent2); }
 
-/* Dot indicator on active tab */
-.nav-btn.active::after {
-  content: '';
+/* точка сверху у активной */
+.nav-dot {
   position: absolute;
-  top: 2px;
+  top: -2px;
   width: 4px; height: 4px;
   border-radius: 50%;
   background: var(--accent2);
+  opacity: 0;
+  transition: opacity 0.2s;
 }
+.nav-btn.active .nav-dot { opacity: 1; }
 
 /* TOAST */
 .toast {
-  position: fixed; bottom: calc(var(--nav-h) + 14px); left: 50%;
-  transform: translateX(-50%) translateY(20px);
+  position: fixed;
+  bottom: calc(var(--nav-height) + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
   background: #3a3a3a; color: #fff;
-  padding: 11px 22px; border-radius: 30px;
+  padding: 10px 22px; border-radius: 30px;
   font-size: 14px; font-weight: 500;
   z-index: 999; opacity: 0;
-  transition: all 0.3s cubic-bezier(0.34,1.3,0.64,1);
+  transition: all 0.28s cubic-bezier(0.34,1.3,0.64,1);
   pointer-events: none; white-space: nowrap;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -370,243 +343,278 @@ body {
 
 <div id="toast" class="toast"></div>
 
-<div class="container">
+<div id="app">
 
-  <!-- VPN PAGE -->
-  <div id="vpnPage" class="page active">
-    <div class="section-label">Мои ключи</div>
+  <div class="scroll-area" id="scrollArea">
 
-    <div class="key-card">
-      <div class="key-card-top">
-        <div class="key-icon active-icon">🛡️</div>
-        <div class="key-info">
-          <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-            <span class="key-id">#ROCKET-7821</span>
-            <span class="badge-vless">VLESS</span>
-          </div>
-          <div class="key-meta">
-            <span class="key-badge badge-active">Оплачен</span>
-            <span>· 2 устройства</span>
-          </div>
-          <div class="key-status" style="color:var(--green)">
-            <div class="status-dot dot-green"></div>
-            <span>До 15 марта 2026</span>
-          </div>
-        </div>
-      </div>
-      <div class="key-divider"></div>
-      <div class="key-actions">
-        <button class="key-btn btn-ghost" onclick="showToast('📋 Ключ скопирован')">📋 Ваш ключ</button>
-        <button class="key-btn btn-accent">🚀 Продлить</button>
-      </div>
-    </div>
+    <!-- VPN -->
+    <div id="vpnPage" class="page active">
+      <div class="section-label">Мои ключи</div>
 
-    <div class="key-card">
-      <div class="key-card-top">
-        <div class="key-icon expired-icon">🔑</div>
-        <div class="key-info">
-          <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-            <span class="key-id">#ROCKET-4103</span>
-            <span class="badge-vless">VLESS</span>
-          </div>
-          <div class="key-meta">
-            <span class="key-badge badge-expired">Не оплачен</span>
-            <span>· 1 устройство</span>
-          </div>
-          <div class="key-status" style="color:var(--red)">
-            <div class="status-dot dot-red"></div>
-            <span>Закончился</span>
+      <div class="key-card">
+        <div class="key-card-top">
+          <div class="key-icon active-icon">🛡️</div>
+          <div class="key-info">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+              <span class="key-id">#ROCKET-7821</span>
+              <span class="badge-vless">VLESS</span>
+            </div>
+            <div class="key-meta">
+              <span class="key-badge badge-active">Оплачен</span>
+              <span>· 2 устройства</span>
+            </div>
+            <div class="key-status" style="color:var(--green)">
+              <div class="status-dot dot-green"></div>
+              <span>До 15 марта 2026</span>
+            </div>
           </div>
         </div>
+        <div class="key-divider"></div>
+        <div class="key-actions">
+          <button class="key-btn btn-ghost" onclick="showToast('📋 Ключ скопирован')">📋 Ваш ключ</button>
+          <button class="key-btn btn-accent">🚀 Продлить</button>
+        </div>
       </div>
-      <div class="key-divider"></div>
-      <div class="key-actions">
-        <button class="key-btn btn-ghost" onclick="showToast('📋 Ключ скопирован')">📋 Ваш ключ</button>
-        <button class="key-btn btn-accent">🚀 Продлить</button>
+
+      <div class="key-card">
+        <div class="key-card-top">
+          <div class="key-icon expired-icon">🔑</div>
+          <div class="key-info">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+              <span class="key-id">#ROCKET-4103</span>
+              <span class="badge-vless">VLESS</span>
+            </div>
+            <div class="key-meta">
+              <span class="key-badge badge-expired">Не оплачен</span>
+              <span>· 1 устройство</span>
+            </div>
+            <div class="key-status" style="color:var(--red)">
+              <div class="status-dot dot-red"></div>
+              <span>Закончился</span>
+            </div>
+          </div>
+        </div>
+        <div class="key-divider"></div>
+        <div class="key-actions">
+          <button class="key-btn btn-ghost" onclick="showToast('📋 Ключ скопирован')">📋 Ваш ключ</button>
+          <button class="key-btn btn-accent">🚀 Продлить</button>
+        </div>
+        <button class="btn-danger-row">🗑 Удалить ключ</button>
       </div>
-      <button class="btn-danger-row">🗑 Удалить ключ</button>
+
+      <div class="buy-banner">
+        <h3>Нужно больше VPN?</h3>
+        <p>Приобретите неограниченное количество ключей VPN</p>
+        <button class="main-btn" style="margin:0;width:100%;border-radius:18px">🚀 Купить VPN</button>
+      </div>
+      <div class="spacer"></div>
     </div>
 
-    <div class="buy-banner">
-      <h3>Нужно больше VPN?</h3>
-      <p>Приобретите неограниченное<br>количество ключей VPN</p>
-      <button class="main-btn" style="margin:0;width:100%;border-radius:20px">🚀 Купить VPN</button>
+    <!-- WALLET -->
+    <div id="walletPage" class="page">
+      <div class="balance-block">
+        <div class="balance-lbl">Баланс кошелька</div>
+        <div class="balance-val"><span>₽</span>126.25</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="section">
+        <div class="section-label">Способ пополнения</div>
+        <div class="list-item">
+          <div class="li-icon blue">⚡</div>
+          <div class="li-content"><div class="li-title">СБП</div><div class="li-sub">Система быстрых платежей</div></div>
+          <div class="li-right"><span class="li-chevron">›</span></div>
+        </div>
+        <div class="list-item" style="border-bottom:none">
+          <div class="li-icon purple">💳</div>
+          <div class="li-content"><div class="li-title">Банковская карта</div><div class="li-sub">Visa, MasterCard, МИР</div></div>
+          <div class="li-right"><span class="li-chevron">›</span></div>
+        </div>
+      </div>
+      <div class="section" style="padding-top:10px">
+        <div class="section-label" style="padding-top:4px">Сумма пополнения</div>
+        <div class="amount-wrap">
+          <div class="amount-sym">₽</div>
+          <input class="amount-input" type="number" value="150" id="amtInput">
+        </div>
+        <div class="quick-row">
+          <button class="q-btn sel" onclick="setAmt(150,this)">150</button>
+          <button class="q-btn" onclick="setAmt(300,this)">300</button>
+          <button class="q-btn" onclick="setAmt(500,this)">500</button>
+          <button class="q-btn" onclick="setAmt(1000,this)">1000</button>
+          <button class="q-btn" onclick="setAmt('',this)">Своя</button>
+        </div>
+      </div>
+      <button class="main-btn" onclick="showToast('⚡ Переход к оплате...')">⚡ Перейти к пополнению</button>
+      <div class="section">
+        <div class="section-label">История операций</div>
+        <div class="list-item">
+          <div class="li-icon green">💳</div>
+          <div class="li-content"><div class="li-title">Пополнение</div><div class="li-sub">19 фев 2026, 14:23</div></div>
+          <div class="li-right"><span class="li-value income">+500 ₽</span></div>
+        </div>
+        <div class="list-item">
+          <div class="li-icon purple">🚀</div>
+          <div class="li-content"><div class="li-title">Оплата VPN · #ROCKET-7821</div><div class="li-sub">18 фев 2026, 10:05</div></div>
+          <div class="li-right"><span class="li-value expense">−299 ₽</span></div>
+        </div>
+        <div class="list-item" style="border-bottom:none">
+          <div class="li-icon orange">👥</div>
+          <div class="li-content"><div class="li-title">Реферальный бонус</div><div class="li-sub">15 фев 2026, 09:40</div></div>
+          <div class="li-right"><span class="li-value income">+74.25 ₽</span></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-  </div>
 
-  <!-- WALLET PAGE -->
-  <div id="walletPage" class="page">
-    <div class="balance-block">
-      <div class="balance-lbl">Баланс кошелька</div>
-      <div class="balance-val"><span>₽</span>126.25</div>
+    <!-- REF -->
+    <div id="refPage" class="page">
+      <div class="section">
+        <div class="ref-stats">
+          <div class="ref-stat"><div class="ref-stat-val">12</div><div class="ref-stat-lbl">Рефералов</div></div>
+          <div class="ref-stat"><div class="ref-stat-val">₽740</div><div class="ref-stat-lbl">Заработано</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Ваша реферальная ссылка</div>
+        <div style="padding:0 16px 8px;font-size:13px;color:var(--text2);line-height:1.5">
+          Приглашайте друзей и получайте <strong style="color:var(--accent2)">20%</strong> от каждой их оплаты
+        </div>
+        <div class="ref-link-row">
+          <div class="ref-link-txt">t.me/RocketVPNbot?start=ref_7821</div>
+          <button class="copy-pill" onclick="showToast('✓ Ссылка скопирована')">Копировать</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-label">Как это работает</div>
+        <div class="step-item"><div class="step-circle">1</div><div class="step-text"><strong>Поделитесь ссылкой</strong> с другом или в соцсетях</div></div>
+        <div class="step-item"><div class="step-circle">2</div><div class="step-text">Друг регистрируется и <strong>оплачивает VPN</strong></div></div>
+        <div class="step-item"><div class="step-circle">3</div><div class="step-text">Вы получаете <strong style="color:var(--accent2)">20% бонус</strong> автоматически на кошелёк</div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <div class="section">
-      <div class="section-label">Способ пополнения</div>
-      <div class="list-item">
-        <div class="li-icon blue">⚡</div>
-        <div class="li-content"><div class="li-title">СБП</div><div class="li-sub">Система быстрых платежей</div></div>
-        <div class="li-right"><span class="li-chevron">›</span></div>
-      </div>
-      <div class="list-item" style="border-bottom:none">
-        <div class="li-icon purple">💳</div>
-        <div class="li-content"><div class="li-title">Банковская карта</div><div class="li-sub">Visa, MasterCard, МИР</div></div>
-        <div class="li-right"><span class="li-chevron">›</span></div>
-      </div>
-    </div>
-    <div class="section" style="padding-top:12px">
-      <div class="section-label" style="padding-top:2px">Сумма пополнения</div>
-      <div class="amount-wrap">
-        <div class="amount-sym">₽</div>
-        <input class="amount-input" type="number" value="150" id="amtInput">
-      </div>
-      <div class="quick-row">
-        <button class="q-btn sel" onclick="setAmt(150,this)">150</button>
-        <button class="q-btn" onclick="setAmt(300,this)">300</button>
-        <button class="q-btn" onclick="setAmt(500,this)">500</button>
-        <button class="q-btn" onclick="setAmt(1000,this)">1000</button>
-        <button class="q-btn" onclick="setAmt('',this)">Своя</button>
-      </div>
-    </div>
-    <button class="main-btn" onclick="showToast('⚡ Переход к оплате...')">⚡ Перейти к пополнению</button>
-    <div class="section">
-      <div class="section-label">История операций</div>
-      <div class="list-item">
-        <div class="li-icon green">💳</div>
-        <div class="li-content"><div class="li-title">Пополнение</div><div class="li-sub">19 фев 2026, 14:23</div></div>
-        <div class="li-right"><span class="li-value income">+500 ₽</span></div>
-      </div>
-      <div class="list-item">
-        <div class="li-icon purple">🚀</div>
-        <div class="li-content"><div class="li-title">Оплата VPN · #ROCKET-7821</div><div class="li-sub">18 фев 2026, 10:05</div></div>
-        <div class="li-right"><span class="li-value expense">−299 ₽</span></div>
-      </div>
-      <div class="list-item" style="border-bottom:none">
-        <div class="li-icon orange">👥</div>
-        <div class="li-content"><div class="li-title">Реферальный бонус</div><div class="li-sub">15 фев 2026, 09:40</div></div>
-        <div class="li-right"><span class="li-value income">+74.25 ₽</span></div>
-      </div>
-    </div>
-    <div class="spacer"></div>
-  </div>
 
-  <!-- REF PAGE -->
-  <div id="refPage" class="page">
-    <div class="section">
-      <div class="ref-stats">
-        <div class="ref-stat"><div class="ref-stat-val">12</div><div class="ref-stat-lbl">Рефералов</div></div>
-        <div class="ref-stat"><div class="ref-stat-val">₽740</div><div class="ref-stat-lbl">Заработано</div></div>
+    <!-- FAQ -->
+    <div id="faqPage" class="page">
+      <div class="section">
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q"><span class="faq-q-text">Как подключить VPN?</span><div class="faq-chevron">▾</div></div>
+          <div class="faq-ans"><div class="faq-ans-inner">Нажмите «Ваш ключ» — он скопируется. Установите v2rayNG (Android) или Streisand (iOS), импортируйте ключ. Готово — займёт 5 секунд.</div></div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q"><span class="faq-q-text">Почему VPN работает в России?</span><div class="faq-chevron">▾</div></div>
+          <div class="faq-ans"><div class="faq-ans-inner">Используем VLESS + Reality — протокол маскирует трафик под HTTPS крупных сайтов. DPI/ТСПУ Роскомнадзора не определяет и не блокирует его.</div></div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q"><span class="faq-q-text">Сколько устройств можно подключить?</span><div class="faq-chevron">▾</div></div>
+          <div class="faq-ans"><div class="faq-ans-inner">Базовый — 1 устройство, Стандарт — 3, Премиум — 5. Можно купить несколько ключей.</div></div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q"><span class="faq-q-text">Как продлить подписку?</span><div class="faq-chevron">▾</div></div>
+          <div class="faq-ans"><div class="faq-ans-inner">Пополните кошелёк, нажмите «Продлить» на ключе. Продление мгновенное, ключ не меняется.</div></div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q"><span class="faq-q-text">Есть ли пробный период?</span><div class="faq-chevron">▾</div></div>
+          <div class="faq-ans"><div class="faq-ans-inner">Да! Новым пользователям — 3 дня бесплатно автоматически при первом запуске. Карта не нужна.</div></div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q"><span class="faq-q-text">Что делать если VPN не работает?</span><div class="faq-chevron">▾</div></div>
+          <div class="faq-ans"><div class="faq-ans-inner">Проверьте срок действия ключа. Попробуйте переключить сервер. Если проблема осталась — напишите в поддержку, ответим в течение часа.</div></div>
+        </div>
       </div>
+      <div class="spacer"></div>
     </div>
-    <div class="section">
-      <div class="section-label">Ваша реферальная ссылка</div>
-      <div style="padding:0 16px 8px;font-size:13px;color:var(--text2);line-height:1.5">
-        Приглашайте друзей и получайте <strong style="color:var(--accent2)">20%</strong> от каждой их оплаты
-      </div>
-      <div class="ref-link-row">
-        <div class="ref-link-txt">t.me/RocketVPNbot?start=ref_7821</div>
-        <button class="copy-pill" onclick="showToast('✓ Ссылка скопирована')">Копировать</button>
-      </div>
-    </div>
-    <div class="section">
-      <div class="section-label">Как это работает</div>
-      <div class="step-item"><div class="step-circle">1</div><div class="step-text"><strong>Поделитесь ссылкой</strong> с другом или в соцсетях</div></div>
-      <div class="step-item"><div class="step-circle">2</div><div class="step-text">Друг регистрируется и <strong>оплачивает VPN</strong></div></div>
-      <div class="step-item"><div class="step-circle">3</div><div class="step-text">Вы получаете <strong style="color:var(--accent2)">20% бонус</strong> автоматически на кошелёк</div></div>
-    </div>
-    <div class="spacer"></div>
-  </div>
 
-  <!-- FAQ PAGE -->
-  <div id="faqPage" class="page">
-    <div class="section">
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q"><span class="faq-q-text">Как подключить VPN?</span><div class="faq-chevron">▾</div></div>
-        <div class="faq-ans"><div class="faq-ans-inner">Нажмите «Ваш ключ» — он скопируется. Установите v2rayNG (Android) или Streisand (iOS), импортируйте ключ. Готово — займёт 5 секунд.</div></div>
-      </div>
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q"><span class="faq-q-text">Почему VPN работает в России?</span><div class="faq-chevron">▾</div></div>
-        <div class="faq-ans"><div class="faq-ans-inner">Используем VLESS + Reality — протокол маскирует трафик под HTTPS крупных сайтов. DPI/ТСПУ Роскомнадзора не определяет и не блокирует его.</div></div>
-      </div>
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q"><span class="faq-q-text">Сколько устройств можно подключить?</span><div class="faq-chevron">▾</div></div>
-        <div class="faq-ans"><div class="faq-ans-inner">Базовый — 1 устройство, Стандарт — 3, Премиум — 5. Можно купить несколько ключей.</div></div>
-      </div>
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q"><span class="faq-q-text">Как продлить подписку?</span><div class="faq-chevron">▾</div></div>
-        <div class="faq-ans"><div class="faq-ans-inner">Пополните кошелёк, нажмите «Продлить» на ключе. Продление мгновенное, ключ не меняется.</div></div>
-      </div>
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q"><span class="faq-q-text">Есть ли пробный период?</span><div class="faq-chevron">▾</div></div>
-        <div class="faq-ans"><div class="faq-ans-inner">Да! Новым пользователям — 3 дня бесплатно автоматически при первом запуске. Карта не нужна.</div></div>
-      </div>
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q"><span class="faq-q-text">Что делать если VPN не работает?</span><div class="faq-chevron">▾</div></div>
-        <div class="faq-ans"><div class="faq-ans-inner">Проверьте срок действия ключа. Попробуйте переключить сервер. Если проблема осталась — напишите в поддержку, ответим в течение часа.</div></div>
-      </div>
-    </div>
-    <div class="spacer"></div>
-  </div>
+  </div><!-- /scroll-area -->
 
-</div>
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="nav-inner">
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button onclick="showPage('vpnPage',this)" class="nav-btn active">
-    <div class="nav-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M12 2C12 2 6 7.5 6 13a6 6 0 0 0 12 0c0-5.5-6-11-6-11z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
-        <circle cx="12" cy="13" r="2.2" fill="currentColor" opacity="0.85"/>
-        <path d="M9.5 19.5L8 21M14.5 19.5L16 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <span class="nav-label">VPN</span>
-  </button>
+      <button onclick="showPage('vpnPage',this)" class="nav-btn active">
+        <div class="nav-dot"></div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2.5C12 2.5 6.5 7.5 6.5 13a5.5 5.5 0 0 0 11 0c0-5.5-5.5-10.5-5.5-10.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="12" cy="13" r="2" fill="currentColor"/>
+            <path d="M9.8 18.8L8.5 20.5M14.2 18.8L15.5 20.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="nav-label">VPN</span>
+      </button>
 
-  <button onclick="showPage('walletPage',this)" class="nav-btn">
-    <div class="nav-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <rect x="2" y="6" width="20" height="13" rx="3.5" stroke="currentColor" stroke-width="1.7"/>
-        <path d="M2 10h20" stroke="currentColor" stroke-width="1.7"/>
-        <rect x="15" y="13" width="4" height="2.5" rx="1.2" fill="currentColor"/>
-        <path d="M6 6V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.7"/>
-      </svg>
-    </div>
-    <span class="nav-label">Кошелёк</span>
-  </button>
+      <button onclick="showPage('walletPage',this)" class="nav-btn">
+        <div class="nav-dot"></div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="2.5" y="6.5" width="19" height="12" rx="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M2.5 10.5h19" stroke="currentColor" stroke-width="1.6"/>
+            <rect x="15.5" y="13.5" width="3.5" height="2" rx="1" fill="currentColor"/>
+            <path d="M6.5 6.5V5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <span class="nav-label">Кошелёк</span>
+      </button>
 
-  <button onclick="showPage('refPage',this)" class="nav-btn">
-    <div class="nav-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="9.5" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/>
-        <circle cx="17" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M3.5 20c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-        <path d="M17 14.5c1.9 0 3.5 1.4 3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <span class="nav-label">Реф. прог.</span>
-  </button>
+      <button onclick="showPage('refPage',this)" class="nav-btn">
+        <div class="nav-dot"></div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <circle cx="17" cy="9" r="2.3" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M17 14.5c2 .3 3.5 1.8 3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="nav-label">Реф. прог.</span>
+      </button>
 
-  <button onclick="showPage('faqPage',this)" class="nav-btn">
-    <div class="nav-icon">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.7"/>
-        <path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-        <circle cx="12" cy="17" r="0.9" fill="currentColor"/>
-      </svg>
+      <button onclick="showPage('faqPage',this)" class="nav-btn">
+        <div class="nav-dot"></div>
+        <div class="nav-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2.2-2.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="12" cy="17.5" r="0.8" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="nav-label">FAQ</span>
+      </button>
+
     </div>
-    <span class="nav-label">FAQ</span>
-  </button>
-</nav>
+  </nav>
+
+</div><!-- /app -->
 
 <script>
-function showPage(pageId, el) {
+const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
+if (tg.requestFullscreen) tg.requestFullscreen();
+tg.setHeaderColor('#1c1c1c');
+tg.setBackgroundColor('#1c1c1c');
+
+function applyLayout() {
+  const contentTop = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
+  const safeTop    = (tg.safeAreaInset        && tg.safeAreaInset.top)        || 0;
+  const top = Math.max(contentTop, safeTop);
+
+  document.getElementById('scrollArea').style.paddingTop = (top + 8) + 'px';
+
+  const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
+  document.getElementById('app').style.height = h + 'px';
+}
+
+document.addEventListener('DOMContentLoaded', applyLayout);
+tg.onEvent('viewportChanged',       applyLayout);
+tg.onEvent('safeAreaChanged',       applyLayout);
+tg.onEvent('contentSafeAreaChanged', applyLayout);
+
+function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(pageId).classList.add('active');
+  document.getElementById(id).classList.add('active');
   el.classList.add('active');
-  document.querySelector('.container').scrollTop = 0;
+  document.getElementById('scrollArea').scrollTop = 0;
 }
 
 function toggleFaq(el) { el.classList.toggle('open'); }
@@ -616,7 +624,7 @@ function setAmt(val, btn) {
   btn.classList.add('sel');
   const inp = document.getElementById('amtInput');
   inp.value = val;
-  if (val === '') inp.focus();
+  if (!val) inp.focus();
 }
 
 function showToast(msg) {
@@ -629,6 +637,3 @@ function showToast(msg) {
 
 </body>
 </html>"""
-
-
-
