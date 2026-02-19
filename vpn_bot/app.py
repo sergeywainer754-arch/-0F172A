@@ -54,9 +54,6 @@ html, body {
   font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text);
   font-size: 15px;
-  /* Запрет elastic scroll на iOS */
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
 }
 
 /*
@@ -76,6 +73,7 @@ html, body {
   flex-direction: column;
   background: var(--bg);
   overflow: hidden;
+  isolation: isolate;
 }
 
 /*
@@ -100,7 +98,8 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: none;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   /* Место под навбар */
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
 }
