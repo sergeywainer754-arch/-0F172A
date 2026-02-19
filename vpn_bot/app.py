@@ -17,25 +17,47 @@ async def index():
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
-tg.expand();
 
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-if (isMobile && tg.requestFullscreen && !tg.isFullscreen) {
+// Определяем устройство
+const isAndroid = /Android/i.test(navigator.userAgent);
+const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+// Android — fullscreen
+if (isAndroid && tg.requestFullscreen) {
     tg.requestFullscreen();
 }
+
+// iOS — только expand
+if (isIOS) {
+    tg.expand();
+}
+
+// ПК — просто expand
+if (!isAndroid && !isIOS) {
+    tg.expand();
+}
+
+
 
 tg.setHeaderColor('#1c1c1c');
 tg.setBackgroundColor('#1c1c1c');
 
 function updateLayout() {
-    const safeTop = (tg.safeAreaInset ? tg.safeAreaInset.top : 0)
-                  + (tg.contentSafeAreaInset ? tg.contentSafeAreaInset.top : 0);
-    document.querySelector('.container').style.paddingTop = Math.max(safeTop, 12) + 'px';
+    const safeTop = tg.safeAreaInset?.top || 0;
+    const contentSafeTop = tg.contentSafeAreaInset?.top || 0;
 
-    const h = tg.viewportStableHeight || tg.viewportHeight;
-    if (h) {
-        document.documentElement.style.height = h + 'px';
-        document.body.style.height = h + 'px';
+    const totalTop = Math.max(safeTop, contentSafeTop);
+
+    const container = document.querySelector('.container');
+
+    // Добавляем безопасный отступ сверху
+    container.style.paddingTop = (totalTop + 20) + 'px';
+
+    // Фиксим высоту
+    const height = tg.viewportStableHeight || tg.viewportHeight;
+    if (height) {
+        document.documentElement.style.height = height + 'px';
+        document.body.style.height = height + 'px';
     }
 }
 
@@ -590,4 +612,5 @@ function showToast(msg) {
 </body>
 </html>
 """
+
 
