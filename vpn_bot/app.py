@@ -15,165 +15,112 @@ async def index():
 <title>ROCKET VPN</title>
 <style>
 :root {
-  --bg:       #1a1a1a;
-  --card:     #252525;
-  --card2:    #2f2f2f;
-  --accent:   #7B61FF;
-  --accent2:  #9B85FF;
-  --asoft:    rgba(123,97,255,0.15);
-  --aborder:  rgba(123,97,255,0.3);
-  --green:    #4CD964;
-  --red:      #FF3B30;
-  --orange:   #FF9500;
-  --blue:     #2AABEE;
-  --text:     #fff;
-  --text2:    #999;
-  --text3:    #4a4a4a;
-  --div:      rgba(255,255,255,0.07);
-  --r:        18px;
-  --r2:       22px;
-
-  /* Высота навбара без safe area */
-  --nav-inner-h: 64px;
-  /* Полная высота навбара с safe area снизу */
-  --nav-h: calc(var(--nav-inner-h) + env(safe-area-inset-bottom, 0px));
+  --bg:      #1a1a1a;
+  --card:    #252525;
+  --card2:   #2f2f2f;
+  --accent:  #7B61FF;
+  --accent2: #9B85FF;
+  --asoft:   rgba(123,97,255,0.15);
+  --aborder: rgba(123,97,255,0.3);
+  --green:   #4CD964;
+  --red:     #FF3B30;
+  --orange:  #FF9500;
+  --blue:    #2AABEE;
+  --text:    #fff;
+  --text2:   #999;
+  --text3:   #4a4a4a;
+  --div:     rgba(255,255,255,0.07);
+  --r:       18px;
+  --r2:      22px;
+  --nav-h:   74px;
 }
 
 *, *::before, *::after {
-  box-sizing: border-box; margin: 0; padding: 0;
+  box-sizing: border-box;
+  margin: 0; padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* body и html НЕ скроллятся */
+/*
+  КРИТИЧЕСКИ ВАЖНО:
+  html и body ЗАБЛОКИРОВАНЫ — не скроллятся, не двигаются.
+  Высота = 100% окна. overflow = hidden.
+*/
 html, body {
+  width: 100%;
   height: 100%;
   overflow: hidden;
   background: var(--bg);
   font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text);
   font-size: 15px;
+  /* Запрет elastic scroll на iOS */
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
 }
 
-/* ════════════════════════════════════
-   LAYOUT
-   #wrap = весь экран (position:fixed)
-   #scroll = скроллящаяся зона
-   .bottom-nav = зафиксированный навбар
-   ════════════════════════════════════ */
-#wrap {
+/*
+  АРХИТЕКТУРА LAYOUT:
+
+  #root  ← занимает весь экран (height задаётся JS = viewportStableHeight)
+    ├── #content-area  ← скроллящаяся зона (flex:1, overflow-y:auto)
+    │     └── .page (контент вкладок)
+    └── (навбар снаружи, position:fixed)
+*/
+
+#root {
   position: fixed;
-  inset: 0;
-  /* Отступ сверху = высота шапки Telegram (CSS-переменная от Telegram SDK) */
-  padding-top: var(--tg-content-safe-area-inset-top, var(--tg-safe-area-inset-top, 0px));
-  /* Отступ снизу = высота навбара */
-  padding-bottom: var(--nav-h);
+  top: 0; left: 0; right: 0;
+  /* height задаётся через JS */
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/*
+  Отступ сверху = высота шапки Telegram.
+  Используем CSS-переменные которые Telegram SDK выставляет сам.
+  Это надёжнее чем JS — применяется мгновенно без прыжков.
+*/
+#top-inset {
+  flex-shrink: 0;
+  height: var(--tg-content-safe-area-inset-top, var(--tg-safe-area-inset-top, 0px));
+  min-height: 0;
   background: var(--bg);
 }
 
-/* Только эта зона скроллится */
-#scroll {
-  height: 100%;
+/*
+  ЕДИНСТВЕННАЯ СКРОЛЛЯЩАЯСЯ ЗОНА.
+  flex:1 = занимает всё место между отступом сверху и навбаром.
+  overflow-y:auto = скроллится только она.
+*/
+#content-area {
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  padding-bottom: 12px;
+  overscroll-behavior: none;
+  /* Место под навбар */
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
 }
 
-/* ════════════════════════════════════
-   BOTTOM NAV — по ТЗ:
-   position:fixed, овальный контейнер,
-   плавает над фоном, учитывает safe-area
-   ════════════════════════════════════ */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  /* Паддинг снизу для safe area (notch/home indicator) */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  /* Фон темнее основного */
-  background: #111;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 10px;
-}
-
-/* Большой овальный контейнер — главный элемент по ТЗ */
-.nav-pill {
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  width: min(320px, 88vw);
-  height: 52px;
-  background: #222;
-  border-radius: 100px;           /* большой овал */
-  border: 1px solid rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 0 6px;
-  gap: 2px;
-}
-
-/* Кнопка внутри овала */
-.nav-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  height: 42px;
-  border-radius: 100px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  font-family: 'Inter', sans-serif;
-  transition: background 0.2s, color 0.2s;
-  color: var(--text3);
-  padding: 0 4px;
-}
-
-/* Активная кнопка — другой цвет фона внутри овала */
-.nav-btn.active {
-  background: rgba(123,97,255,0.18);
-  color: var(--accent2);
-}
-
-.nav-btn svg {
-  display: block;
-  transition: color 0.2s;
-}
-
-.nav-label {
-  font-size: 9.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  letter-spacing: 0.1px;
-  transition: color 0.2s;
-}
-
-/* ════ PAGES ════ */
+/* ── PAGES ── */
 .page { display: none; }
 .page.active { display: block; animation: fi .15s ease; }
 @keyframes fi { from{opacity:0} to{opacity:1} }
 .spacer { height: 10px; }
 
-/* ════ SECTION ════ */
+/* ── SECTION ── */
 .sl {
   padding: 10px 16px 5px;
   font-size: 11px; font-weight: 600;
   color: var(--text2); text-transform: uppercase; letter-spacing: 0.7px;
 }
-.section {
-  background: var(--card); border-radius: var(--r2);
-  margin: 6px 12px; overflow: hidden;
-}
+.section { background: var(--card); border-radius: var(--r2); margin: 6px 12px; overflow: hidden; }
 .section > .sl { padding: 13px 16px 5px; }
 
-/* ════ KEY CARD ════ */
+/* ── KEY CARD ── */
 .kc { background: var(--card); border-radius: var(--r2); margin: 6px 12px; overflow: hidden; }
 .kc-top { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
 .ki {
@@ -184,14 +131,14 @@ html, body {
 .ki.on  { background: rgba(76,217,100,0.13); }
 .ki.off { background: rgba(255,59,48,0.11); }
 .ki-info { flex: 1; min-width: 0; }
-.ki-id   { font-size: 16px; font-weight: 700; }
+.ki-id { font-size: 16px; font-weight: 700; }
 .ki-meta { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 7px; margin-top: 4px; }
 .badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 30px; }
 .b-ok { background: rgba(76,217,100,0.15); color: var(--green); }
 .b-no { background: rgba(255,59,48,0.12); color: var(--red); }
 .b-vl { background: var(--asoft); color: var(--accent2); font-size: 10px; padding: 2px 8px; border-radius: 30px; font-weight: 600; }
 .ki-st { display: flex; align-items: center; gap: 5px; font-size: 13px; margin-top: 5px; }
-.dot   { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .dot.g { background: var(--green); }
 .dot.r { background: var(--red); animation: bl 1.4s infinite; }
 @keyframes bl { 0%,100%{opacity:1} 50%{opacity:.3} }
@@ -211,18 +158,15 @@ html, body {
   padding: 12px; border-radius: var(--r);
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
 }
-.kb-del:active { opacity: .75; }
-
 .main-btn {
   width: calc(100% - 24px); margin: 6px 12px 10px; padding: 15px;
-  border-radius: var(--r2); border: none;
-  background: var(--accent); color: #fff;
+  border-radius: var(--r2); border: none; background: var(--accent); color: #fff;
   font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .main-btn:active { opacity: .85; }
 
-/* ════ BANNER ════ */
+/* ── BANNER ── */
 .banner {
   margin: 6px 12px;
   background: linear-gradient(135deg,#2d1f66,#1e1450);
@@ -236,7 +180,7 @@ html, body {
 .banner h3 { font-size:16px; font-weight:700; margin-bottom:5px; }
 .banner p  { font-size:13px; color:rgba(255,255,255,.6); margin-bottom:14px; line-height:1.5; }
 
-/* ════ BALANCE ════ */
+/* ── BALANCE ── */
 .balance {
   margin: 0 12px;
   background: linear-gradient(135deg,#2d1f66,#1e1450);
@@ -251,17 +195,11 @@ html, body {
 .bal-val { font-size:38px; font-weight:700; line-height:1; }
 .bal-val span { font-size:22px; color:var(--accent2); margin-right:3px; }
 
-/* ════ LIST ════ */
-.li {
-  display:flex; align-items:center; padding:12px 16px; gap:13px;
-  border-bottom:1px solid var(--div);
-}
+/* ── LIST ── */
+.li { display:flex; align-items:center; padding:12px 16px; gap:13px; border-bottom:1px solid var(--div); }
 .li:last-child { border-bottom:none; }
 .li:active { background:rgba(255,255,255,.03); }
-.li-ic {
-  width:40px; height:40px; border-radius:13px;
-  display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;
-}
+.li-ic { width:40px; height:40px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
 .li-ic.p { background:var(--asoft); }
 .li-ic.b { background:rgba(42,171,238,.12); }
 .li-ic.g { background:rgba(76,217,100,.12); }
@@ -275,7 +213,7 @@ html, body {
 .li-v.exp { color:var(--red); }
 .chev { color:var(--text3); font-size:20px; }
 
-/* ════ AMOUNT ════ */
+/* ── AMOUNT ── */
 .amt-wrap {
   margin:0 16px 12px; background:#1e1e1e; border-radius:var(--r);
   display:flex; align-items:center; padding:0 14px;
@@ -296,9 +234,9 @@ html, body {
 }
 .q-btn.sel { border-color:var(--accent); color:var(--accent2); background:var(--asoft); }
 
-/* ════ REF ════ */
+/* ── REF ── */
 .ref-stats { display:grid; grid-template-columns:1fr 1fr; }
-.ref-stat  { padding:18px 16px; text-align:center; border-right:1px solid var(--div); }
+.ref-stat { padding:18px 16px; text-align:center; border-right:1px solid var(--div); }
 .ref-stat:last-child { border-right:none; }
 .rsv { font-size:26px; font-weight:700; color:var(--accent2); margin-bottom:4px; }
 .rsl { font-size:12px; color:var(--text2); }
@@ -308,12 +246,11 @@ html, body {
 }
 .rl-txt { flex:1; font-size:13px; color:var(--accent2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cp-btn {
-  background:var(--accent); color:#fff; border:none;
-  border-radius:30px; padding:7px 14px;
+  background:var(--accent); color:#fff; border:none; border-radius:30px; padding:7px 14px;
   font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer;
 }
 
-/* ════ STEPS ════ */
+/* ── STEPS ── */
 .step { display:flex; align-items:flex-start; gap:13px; padding:12px 16px; border-bottom:1px solid var(--div); }
 .step:last-child { border-bottom:none; }
 .step-n {
@@ -325,7 +262,7 @@ html, body {
 .step-t { font-size:14px; color:var(--text2); line-height:1.6; padding-top:3px; }
 .step-t strong { color:var(--text); }
 
-/* ════ FAQ ════ */
+/* ── FAQ ── */
 .faq-i { border-bottom:1px solid var(--div); overflow:hidden; }
 .faq-i:last-child { border-bottom:none; }
 .faq-q { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; cursor:pointer; gap:12px; }
@@ -341,34 +278,97 @@ html, body {
 .faq-i.open .faq-a { max-height:300px; }
 .faq-ai { padding:0 16px 14px; font-size:14px; color:var(--text2); line-height:1.65; }
 
-/* ════ TOAST ════ */
-.toast {
-  position:fixed; bottom:100px; left:50%;
-  transform:translateX(-50%) translateY(16px);
-  background:#333; color:#fff;
-  padding:10px 22px; border-radius:30px;
-  font-size:14px; font-weight:500;
-  z-index:999; opacity:0;
-  transition:all .28s cubic-bezier(.34,1.3,.64,1);
-  pointer-events:none; white-space:nowrap;
+/* ════════════════════════════════════
+   BOTTOM NAV — position:fixed
+   Большой овал, плавает над контентом
+   ════════════════════════════════════ */
+#bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  /* Фон под овалом = основной фон страницы */
+  background: var(--bg);
+  padding: 8px 0 env(safe-area-inset-bottom, 8px);
 }
-.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* Большой овальный контейнер */
+.nav-pill {
+  display: flex;
+  align-items: center;
+  width: min(310px, 86vw);
+  height: 54px;
+  background: #111;
+  border-radius: 100px;
+  padding: 4px;
+  gap: 2px;
+}
+
+/* Кнопка — занимает своё место внутри овала */
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 46px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  color: var(--text3);
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  padding: 0 2px;
+}
+
+.nav-btn.active {
+  background: #2a2a2a;
+  color: var(--accent2);
+}
+
+.nav-btn svg { display: block; }
+
+.nav-label {
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.1px;
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: #333; color: #fff;
+  padding: 10px 22px; border-radius: 30px;
+  font-size: 14px; font-weight: 500;
+  z-index: 9999; opacity: 0;
+  transition: all .28s cubic-bezier(.34,1.3,.64,1);
+  pointer-events: none; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
 <div id="toast" class="toast"></div>
 
-<!-- WRAP: весь экран, отступ сверху под шапку Telegram -->
-<div id="wrap">
+<!-- ROOT: фиксированный корень, высота = viewport -->
+<div id="root">
 
-  <!-- SCROLL: только эта зона скроллится -->
-  <div id="scroll">
+  <!-- TOP INSET: пространство под шапку Telegram -->
+  <div id="top-inset"></div>
+
+  <!-- CONTENT AREA: ЕДИНСТВЕННАЯ скроллящаяся зона -->
+  <div id="content-area">
 
     <!-- VPN -->
     <div id="vpnPage" class="page active">
       <div class="sl">Мои ключи</div>
-
       <div class="kc">
         <div class="kc-top">
           <div class="ki on">🛡️</div>
@@ -386,7 +386,6 @@ html, body {
           <button class="kb kb-a">🚀 Продлить</button>
         </div>
       </div>
-
       <div class="kc">
         <div class="kc-top">
           <div class="ki off">🔑</div>
@@ -405,7 +404,6 @@ html, body {
         </div>
         <button class="kb-del">🗑 Удалить ключ</button>
       </div>
-
       <div class="banner">
         <h3>Нужно больше VPN?</h3>
         <p>Приобретите неограниченное количество ключей VPN</p>
@@ -506,11 +504,11 @@ html, body {
         </div>
         <div class="faq-i" onclick="toggleFaq(this)">
           <div class="faq-q"><span class="faq-qt">Почему VPN работает в России?</span><div class="faq-ch">▾</div></div>
-          <div class="faq-a"><div class="faq-ai">Используем VLESS + Reality — протокол маскирует трафик под HTTPS крупных сайтов. DPI/ТСПУ Роскомнадзора не определяет и не блокирует его.</div></div>
+          <div class="faq-a"><div class="faq-ai">Используем VLESS + Reality — протокол маскирует трафик под HTTPS крупных сайтов.</div></div>
         </div>
         <div class="faq-i" onclick="toggleFaq(this)">
           <div class="faq-q"><span class="faq-qt">Сколько устройств можно подключить?</span><div class="faq-ch">▾</div></div>
-          <div class="faq-a"><div class="faq-ai">Базовый — 1 устройство, Стандарт — 3, Премиум — 5. Можно купить несколько ключей.</div></div>
+          <div class="faq-a"><div class="faq-ai">Базовый — 1 устройство, Стандарт — 3, Премиум — 5.</div></div>
         </div>
         <div class="faq-i" onclick="toggleFaq(this)">
           <div class="faq-q"><span class="faq-qt">Как продлить подписку?</span><div class="faq-ch">▾</div></div>
@@ -518,23 +516,22 @@ html, body {
         </div>
         <div class="faq-i" onclick="toggleFaq(this)">
           <div class="faq-q"><span class="faq-qt">Есть ли пробный период?</span><div class="faq-ch">▾</div></div>
-          <div class="faq-a"><div class="faq-ai">Да! Новым пользователям — 3 дня бесплатно автоматически при первом запуске. Карта не нужна.</div></div>
+          <div class="faq-a"><div class="faq-ai">Да! Новым пользователям — 3 дня бесплатно при первом запуске. Карта не нужна.</div></div>
         </div>
         <div class="faq-i" onclick="toggleFaq(this)">
           <div class="faq-q"><span class="faq-qt">Что делать если VPN не работает?</span><div class="faq-ch">▾</div></div>
-          <div class="faq-a"><div class="faq-ai">Проверьте срок действия ключа. Попробуйте переключить сервер. Если проблема осталась — напишите в поддержку, ответим в течение часа.</div></div>
+          <div class="faq-a"><div class="faq-ai">Проверьте срок действия ключа. Попробуйте переключить сервер. Напишите в поддержку — ответим в течение часа.</div></div>
         </div>
       </div>
       <div class="spacer"></div>
     </div>
 
-  </div><!-- /scroll -->
-</div><!-- /wrap -->
+  </div><!-- /content-area -->
+</div><!-- /root -->
 
-<!-- BOTTOM NAV — вне #wrap, position:fixed -->
-<nav class="bottom-nav">
+<!-- BOTTOM NAV: ПОЛНОСТЬЮ вне #root, position:fixed -->
+<nav id="bottom-nav">
   <div class="nav-pill">
-
     <button class="nav-btn active" onclick="showPage('vpnPage',this)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
         <path d="M12 2.5C12 2.5 6.5 7.5 6.5 13a5.5 5.5 0 0 0 11 0c0-5.5-5.5-10.5-5.5-10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -543,7 +540,6 @@ html, body {
       </svg>
       <span class="nav-label">VPN</span>
     </button>
-
     <button class="nav-btn" onclick="showPage('walletPage',this)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
         <rect x="2.5" y="6.5" width="19" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/>
@@ -553,7 +549,6 @@ html, body {
       </svg>
       <span class="nav-label">Кошелёк</span>
     </button>
-
     <button class="nav-btn" onclick="showPage('refPage',this)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
         <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
@@ -563,7 +558,6 @@ html, body {
       </svg>
       <span class="nav-label">Реф. прог.</span>
     </button>
-
     <button class="nav-btn" onclick="showPage('faqPage',this)">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
         <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
@@ -572,7 +566,6 @@ html, body {
       </svg>
       <span class="nav-label">FAQ</span>
     </button>
-
   </div>
 </nav>
 
@@ -580,7 +573,7 @@ html, body {
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-// Мобильные — fullscreen, ПК — только expand
+// Мобильные — fullscreen, ПК — expand
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
   if (tg.requestFullscreen) tg.requestFullscreen();
   else tg.expand();
@@ -591,20 +584,35 @@ if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 tg.setHeaderColor('#1a1a1a');
 tg.setBackgroundColor('#1a1a1a');
 
-// Подстраиваем высоту #wrap под реальный viewport Telegram
-function fixHeight() {
+const root = document.getElementById('root');
+const topInset = document.getElementById('top-inset');
+const contentArea = document.getElementById('content-area');
+
+function applyLayout() {
+  // 1. Высота всего приложения = стабильная высота viewport Telegram
   const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
-  document.getElementById('wrap').style.height = h + 'px';
+  root.style.height = h + 'px';
+
+  // 2. Отступ сверху = высота шапки Telegram
+  //    Берём максимум из доступных источников
+  const ct = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
+  const st = (tg.safeAreaInset && tg.safeAreaInset.top) || 0;
+  const top = Math.max(ct, st);
+  topInset.style.height = top + 'px';
 }
-tg.onEvent('viewportChanged', fixHeight);
-fixHeight();
+
+// Вызываем при загрузке и на все события Telegram
+applyLayout();
+tg.onEvent('viewportChanged',        applyLayout);
+tg.onEvent('safeAreaChanged',        applyLayout);
+tg.onEvent('contentSafeAreaChanged', applyLayout);
 
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   el.classList.add('active');
-  document.getElementById('scroll').scrollTop = 0;
+  contentArea.scrollTop = 0;
 }
 
 function toggleFaq(el) { el.classList.toggle('open'); }
