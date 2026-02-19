@@ -574,7 +574,8 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 
 // Мобильные — fullscreen, ПК — expand
-if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+if (isMobile) {
   if (tg.requestFullscreen) tg.requestFullscreen();
   else tg.expand();
 } else {
@@ -583,6 +584,16 @@ if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
 tg.setHeaderColor('#1a1a1a');
 tg.setBackgroundColor('#1a1a1a');
+
+// ── ЗАЩИТА ОТ ЗАКРЫТИЯ СВАЙПОМ ──
+// 1. Запрет вертикального свайпа (Bot API 7.7+)
+if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+// 2. Диалог подтверждения при закрытии (Bot API 6.2+)
+if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
+// 3. CSS-трюк: контент height: calc(100% + 1px) — WebView не передаёт свайп Telegram
+if (isMobile) {
+  document.getElementById('content-area').style.minHeight = 'calc(100% + 1px)';
+}
 
 const root = document.getElementById('root');
 const topInset = document.getElementById('top-inset');
