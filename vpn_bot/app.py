@@ -45,7 +45,7 @@ function updateLayout() {
     const contentTop = tg.contentSafeAreaInset ? tg.contentSafeAreaInset.top : 0;
 
     // 👇 вот тут регулируем высоту
-    const topPadding = safeTop + contentTop + 24;
+    const topPadding = safeTop + contentTop + 20;
 
     document.querySelector('.container').style.paddingTop = topPadding + 'px';
 
@@ -611,6 +611,7 @@ function showToast(msg) {
 </body>
 </html>
 """
+
 
 
 
