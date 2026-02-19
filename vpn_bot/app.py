@@ -24,8 +24,6 @@ async def index():
   --aborder: rgba(123,97,255,0.3);
   --green:   #4CD964;
   --red:     #FF3B30;
-  --orange:  #FF9500;
-  --blue:    #2AABEE;
   --text:    #fff;
   --text2:   #999;
   --text3:   #4a4a4a;
@@ -41,59 +39,30 @@ async def index():
   -webkit-tap-highlight-color: transparent;
 }
 
-/*
-  КРИТИЧЕСКИ ВАЖНО:
-  html и body ЗАБЛОКИРОВАНЫ — не скроллятся, не двигаются.
-  Высота = 100% окна. overflow = hidden.
-*/
 html, body {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   overflow: hidden;
   background: var(--bg);
   font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text);
   font-size: 15px;
-  /* env() safe-area НЕ работает в Telegram iOS — используем JS */
 }
-
-/*
-  АРХИТЕКТУРА LAYOUT:
-
-  #root  ← занимает весь экран (height задаётся JS = viewportStableHeight)
-    ├── #content-area  ← скроллящаяся зона (flex:1, overflow-y:auto)
-    │     └── .page (контент вкладок)
-    └── (навбар снаружи, position:fixed)
-*/
 
 #root {
   position: fixed;
   top: 0; left: 0; right: 0;
-  /* height задаётся через JS */
   display: flex;
   flex-direction: column;
   background: var(--bg);
   overflow: hidden;
-  isolation: isolate;
 }
 
-/*
-  Отступ сверху = высота шапки Telegram.
-  Используем CSS-переменные которые Telegram SDK выставляет сам.
-  Это надёжнее чем JS — применяется мгновенно без прыжков.
-*/
 #top-inset {
   flex-shrink: 0;
-  height: var(--tg-content-safe-area-inset-top, var(--tg-safe-area-inset-top, 0px));
-  min-height: 0;
   background: var(--bg);
+  height: var(--tg-content-safe-area-inset-top, var(--tg-safe-area-inset-top, 0px));
 }
 
-/*
-  ЕДИНСТВЕННАЯ СКРОЛЛЯЩАЯСЯ ЗОНА.
-  flex:1 = занимает всё место между отступом сверху и навбаром.
-  overflow-y:auto = скроллится только она.
-*/
 #content-area {
   flex: 1;
   overflow-y: auto;
@@ -101,37 +70,26 @@ html, body {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   touch-action: pan-y;
-  /* Место под навбар */
   padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  min-height: calc(100% + 1px);
 }
 
-/* ── PAGES ── */
 .page { display: none; }
 .page.active { display: block; animation: fi .15s ease; }
 @keyframes fi { from{opacity:0} to{opacity:1} }
 .spacer { height: 10px; }
 
-/* ── SECTION ── */
-.sl {
-  padding: 10px 16px 5px;
-  font-size: 11px; font-weight: 600;
-  color: var(--text2); text-transform: uppercase; letter-spacing: 0.7px;
-}
+.sl { padding: 10px 16px 5px; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.7px; }
 .section { background: var(--card); border-radius: var(--r2); margin: 6px 12px; overflow: hidden; }
 .section > .sl { padding: 13px 16px 5px; }
 
-/* ── KEY CARD ── */
 .kc { background: var(--card); border-radius: var(--r2); margin: 6px 12px; overflow: hidden; }
 .kc-top { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
-.ki {
-  width: 46px; height: 46px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 21px; flex-shrink: 0;
-}
+.ki { width: 46px; height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 21px; flex-shrink: 0; }
 .ki.on  { background: rgba(76,217,100,0.13); }
 .ki.off { background: rgba(255,59,48,0.11); }
 .ki-info { flex: 1; min-width: 0; }
-.ki-id { font-size: 16px; font-weight: 700; }
+.ki-id   { font-size: 16px; font-weight: 700; }
 .ki-meta { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 7px; margin-top: 4px; }
 .badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 30px; }
 .b-ok { background: rgba(76,217,100,0.15); color: var(--green); }
@@ -144,58 +102,25 @@ html, body {
 @keyframes bl { 0%,100%{opacity:1} 50%{opacity:.3} }
 .kc-div { height: 1px; background: var(--div); margin: 0 16px; }
 .kc-act { display: flex; padding: 10px 12px; gap: 8px; }
-.kb {
-  flex: 1; padding: 12px; border-radius: var(--r); border: none;
-  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: opacity .15s;
-}
+.kb { flex: 1; padding: 12px; border-radius: var(--r); border: none; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
 .kb:active { opacity: .75; }
 .kb-g { background: var(--card2); color: var(--text); }
 .kb-a { background: var(--accent); color: #fff; }
-.kb-del {
-  display: block; background: rgba(255,59,48,.1); color: var(--red);
-  border: none; margin: 0 12px 12px; width: calc(100% - 24px);
-  padding: 12px; border-radius: var(--r);
-  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
-}
-.main-btn {
-  width: calc(100% - 24px); margin: 6px 12px 10px; padding: 15px;
-  border-radius: var(--r2); border: none; background: var(--accent); color: #fff;
-  font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
+.kb-del { display: block; background: rgba(255,59,48,.1); color: var(--red); border: none; margin: 0 12px 12px; width: calc(100% - 24px); padding: 12px; border-radius: var(--r); font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+.main-btn { width: calc(100% - 24px); margin: 6px 12px 10px; padding: 15px; border-radius: var(--r2); border: none; background: var(--accent); color: #fff; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .main-btn:active { opacity: .85; }
 
-/* ── BANNER ── */
-.banner {
-  margin: 6px 12px;
-  background: linear-gradient(135deg,#2d1f66,#1e1450);
-  border-radius: var(--r2); padding: 20px 18px;
-  border: 1px solid var(--aborder); position: relative; overflow: hidden;
-}
-.banner::after {
-  content:'🚀'; position:absolute; right:14px; top:50%;
-  transform:translateY(-50%); font-size:50px; opacity:.12; pointer-events:none;
-}
+.banner { margin: 6px 12px; background: linear-gradient(135deg,#2d1f66,#1e1450); border-radius: var(--r2); padding: 20px 18px; border: 1px solid var(--aborder); position: relative; overflow: hidden; }
+.banner::after { content:'🚀'; position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:50px; opacity:.12; pointer-events:none; }
 .banner h3 { font-size:16px; font-weight:700; margin-bottom:5px; }
 .banner p  { font-size:13px; color:rgba(255,255,255,.6); margin-bottom:14px; line-height:1.5; }
 
-/* ── BALANCE ── */
-.balance {
-  margin: 0 12px;
-  background: linear-gradient(135deg,#2d1f66,#1e1450);
-  border-radius: var(--r2); padding: 22px 20px;
-  border: 1px solid var(--aborder); position: relative; overflow: hidden;
-}
-.balance::after {
-  content:'🚀'; position:absolute; right:14px; top:50%;
-  transform:translateY(-50%); font-size:48px; opacity:.1; pointer-events:none;
-}
+.balance { margin: 0 12px; background: linear-gradient(135deg,#2d1f66,#1e1450); border-radius: var(--r2); padding: 22px 20px; border: 1px solid var(--aborder); position: relative; overflow: hidden; }
+.balance::after { content:'🚀'; position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:48px; opacity:.1; pointer-events:none; }
 .bal-lbl { font-size:13px; color:rgba(255,255,255,.5); margin-bottom:5px; }
 .bal-val { font-size:38px; font-weight:700; line-height:1; }
 .bal-val span { font-size:22px; color:var(--accent2); margin-right:3px; }
 
-/* ── LIST ── */
 .li { display:flex; align-items:center; padding:12px 16px; gap:13px; border-bottom:1px solid var(--div); }
 .li:last-child { border-bottom:none; }
 .li:active { background:rgba(255,255,255,.03); }
@@ -213,75 +138,39 @@ html, body {
 .li-v.exp { color:var(--red); }
 .chev { color:var(--text3); font-size:20px; }
 
-/* ── AMOUNT ── */
-.amt-wrap {
-  margin:0 16px 12px; background:#1e1e1e; border-radius:var(--r);
-  display:flex; align-items:center; padding:0 14px;
-  border:1.5px solid transparent; transition:border-color .2s;
-}
+.amt-wrap { margin:0 16px 12px; background:#1e1e1e; border-radius:var(--r); display:flex; align-items:center; padding:0 14px; border:1.5px solid transparent; transition:border-color .2s; }
 .amt-wrap:focus-within { border-color:var(--accent); }
 .amt-sym { font-size:22px; font-weight:700; color:var(--accent2); margin-right:6px; }
-.amt-inp {
-  background:transparent; border:none; outline:none;
-  font-family:'Inter',sans-serif; font-size:28px; font-weight:700;
-  color:var(--text); width:100%; padding:12px 0;
-}
+.amt-inp { background:transparent; border:none; outline:none; font-family:'Inter',sans-serif; font-size:28px; font-weight:700; color:var(--text); width:100%; padding:12px 0; }
 .q-row { display:flex; gap:7px; padding:0 16px 14px; }
-.q-btn {
-  flex:1; padding:10px 4px; border-radius:12px;
-  border:1px solid var(--div); background:#1e1e1e; color:var(--text2);
-  font-family:'Inter',sans-serif; font-size:14px; font-weight:600; cursor:pointer;
-}
+.q-btn { flex:1; padding:10px 4px; border-radius:12px; border:1px solid var(--div); background:#1e1e1e; color:var(--text2); font-family:'Inter',sans-serif; font-size:14px; font-weight:600; cursor:pointer; }
 .q-btn.sel { border-color:var(--accent); color:var(--accent2); background:var(--asoft); }
 
-/* ── REF ── */
 .ref-stats { display:grid; grid-template-columns:1fr 1fr; }
 .ref-stat { padding:18px 16px; text-align:center; border-right:1px solid var(--div); }
 .ref-stat:last-child { border-right:none; }
 .rsv { font-size:26px; font-weight:700; color:var(--accent2); margin-bottom:4px; }
 .rsl { font-size:12px; color:var(--text2); }
-.ref-link {
-  display:flex; align-items:center; margin:0 16px 14px; background:#1e1e1e;
-  border-radius:var(--r); padding:10px 12px; gap:10px; border:1px solid var(--aborder);
-}
+.ref-link { display:flex; align-items:center; margin:0 16px 14px; background:#1e1e1e; border-radius:var(--r); padding:10px 12px; gap:10px; border:1px solid var(--aborder); }
 .rl-txt { flex:1; font-size:13px; color:var(--accent2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.cp-btn {
-  background:var(--accent); color:#fff; border:none; border-radius:30px; padding:7px 14px;
-  font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer;
-}
+.cp-btn { background:var(--accent); color:#fff; border:none; border-radius:30px; padding:7px 14px; font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer; }
 
-/* ── STEPS ── */
 .step { display:flex; align-items:flex-start; gap:13px; padding:12px 16px; border-bottom:1px solid var(--div); }
 .step:last-child { border-bottom:none; }
-.step-n {
-  width:28px; height:28px; border-radius:50%;
-  background:var(--asoft); border:1.5px solid var(--aborder);
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; color:var(--accent2); flex-shrink:0; margin-top:2px;
-}
+.step-n { width:28px; height:28px; border-radius:50%; background:var(--asoft); border:1.5px solid var(--aborder); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--accent2); flex-shrink:0; margin-top:2px; }
 .step-t { font-size:14px; color:var(--text2); line-height:1.6; padding-top:3px; }
 .step-t strong { color:var(--text); }
 
-/* ── FAQ ── */
 .faq-i { border-bottom:1px solid var(--div); overflow:hidden; }
 .faq-i:last-child { border-bottom:none; }
 .faq-q { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; cursor:pointer; gap:12px; }
 .faq-qt { font-size:15px; font-weight:500; }
-.faq-ch {
-  width:22px; height:22px; border-radius:50%; background:var(--card2);
-  display:flex; align-items:center; justify-content:center;
-  color:var(--text2); font-size:10px; flex-shrink:0;
-  transition:transform .25s, background .2s;
-}
+.faq-ch { width:22px; height:22px; border-radius:50%; background:var(--card2); display:flex; align-items:center; justify-content:center; color:var(--text2); font-size:10px; flex-shrink:0; transition:transform .25s, background .2s; }
 .faq-i.open .faq-ch { transform:rotate(180deg); background:var(--asoft); color:var(--accent2); }
 .faq-a { max-height:0; overflow:hidden; transition:max-height .3s ease; }
 .faq-i.open .faq-a { max-height:300px; }
 .faq-ai { padding:0 16px 14px; font-size:14px; color:var(--text2); line-height:1.65; }
 
-/* ════════════════════════════════════
-   BOTTOM NAV — position:fixed
-   Большой овал, плавает над контентом
-   ════════════════════════════════════ */
 #bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -289,67 +178,28 @@ html, body {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  /* Фон под овалом = основной фон страницы */
   background: var(--bg);
   padding: 8px 0 env(safe-area-inset-bottom, 8px);
 }
-
-/* Большой овальный контейнер */
 .nav-pill {
-  display: flex;
-  align-items: center;
-  width: min(310px, 86vw);
-  height: 54px;
-  background: #111;
-  border-radius: 100px;
-  padding: 4px;
-  gap: 2px;
+  display: flex; align-items: center;
+  width: min(310px, 86vw); height: 54px;
+  background: #111; border-radius: 100px;
+  padding: 4px; gap: 2px;
 }
-
-/* Кнопка — занимает своё место внутри овала */
 .nav-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  height: 46px;
-  border-radius: 100px;
-  border: none;
-  background: transparent;
-  color: var(--text3);
-  font-family: 'Inter', sans-serif;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  padding: 0 2px;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px; height: 46px; border-radius: 100px;
+  border: none; background: transparent;
+  color: var(--text3); font-family: 'Inter', sans-serif;
+  cursor: pointer; transition: background .2s, color .2s; padding: 0 2px;
 }
-
-.nav-btn.active {
-  background: #2a2a2a;
-  color: var(--accent2);
-}
-
+.nav-btn.active { background: #2a2a2a; color: var(--accent2); }
 .nav-btn svg { display: block; }
+.nav-label { font-size: 9px; font-weight: 600; white-space: nowrap; letter-spacing: 0.1px; }
 
-.nav-label {
-  font-size: 9px;
-  font-weight: 600;
-  white-space: nowrap;
-  letter-spacing: 0.1px;
-}
-
-/* ── TOAST ── */
-.toast {
-  position: fixed; bottom: 90px; left: 50%;
-  transform: translateX(-50%) translateY(16px);
-  background: #333; color: #fff;
-  padding: 10px 22px; border-radius: 30px;
-  font-size: 14px; font-weight: 500;
-  z-index: 9999; opacity: 0;
-  transition: all .28s cubic-bezier(.34,1.3,.64,1);
-  pointer-events: none; white-space: nowrap;
-}
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(16px); background: #333; color: #fff; padding: 10px 22px; border-radius: 30px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; transition: all .28s cubic-bezier(.34,1.3,.64,1); pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
@@ -357,16 +207,10 @@ html, body {
 
 <div id="toast" class="toast"></div>
 
-<!-- ROOT: фиксированный корень, высота = viewport -->
 <div id="root">
-
-  <!-- TOP INSET: пространство под шапку Telegram -->
   <div id="top-inset"></div>
-
-  <!-- CONTENT AREA: ЕДИНСТВЕННАЯ скроллящаяся зона -->
   <div id="content-area">
 
-    <!-- VPN -->
     <div id="vpnPage" class="page active">
       <div class="sl">Мои ключи</div>
       <div class="kc">
@@ -412,7 +256,6 @@ html, body {
       <div class="spacer"></div>
     </div>
 
-    <!-- WALLET -->
     <div id="walletPage" class="page">
       <div class="balance">
         <div class="bal-lbl">Баланс кошелька</div>
@@ -468,7 +311,6 @@ html, body {
       <div class="spacer"></div>
     </div>
 
-    <!-- REF -->
     <div id="refPage" class="page">
       <div class="section">
         <div class="ref-stats">
@@ -495,7 +337,6 @@ html, body {
       <div class="spacer"></div>
     </div>
 
-    <!-- FAQ -->
     <div id="faqPage" class="page">
       <div class="section">
         <div class="faq-i" onclick="toggleFaq(this)">
@@ -526,10 +367,9 @@ html, body {
       <div class="spacer"></div>
     </div>
 
-  </div><!-- /content-area -->
-</div><!-- /root -->
+  </div>
+</div>
 
-<!-- BOTTOM NAV: ПОЛНОСТЬЮ вне #root, position:fixed -->
 <nav id="bottom-nav">
   <div class="nav-pill">
     <button class="nav-btn active" onclick="showPage('vpnPage',this)">
@@ -573,11 +413,9 @@ html, body {
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-// Мобильные — fullscreen, ПК — expand
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-if (isMobile) {
-  if (tg.requestFullscreen) tg.requestFullscreen();
-  else tg.expand();
+// Fullscreen на мобильных, expand на десктопе
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  (tg.requestFullscreen || tg.expand).call(tg);
 } else {
   tg.expand();
 }
@@ -585,35 +423,18 @@ if (isMobile) {
 tg.setHeaderColor('#1a1a1a');
 tg.setBackgroundColor('#1a1a1a');
 
-// ── ЗАЩИТА ОТ ЗАКРЫТИЯ СВАЙПОМ ──
-// 1. Запрет вертикального свайпа (Bot API 7.7+)
-if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
-// 2. Диалог подтверждения при закрытии (Bot API 6.2+)
-if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
-// 3. CSS-трюк: контент height: calc(100% + 1px) — WebView не передаёт свайп Telegram
-if (isMobile) {
-  document.getElementById('content-area').style.minHeight = 'calc(100% + 1px)';
-}
+tg.disableVerticalSwipes?.();
+tg.enableClosingConfirmation?.();
 
-const root = document.getElementById('root');
-const topInset = document.getElementById('top-inset');
+const root        = document.getElementById('root');
+const topInset    = document.getElementById('top-inset');
 const contentArea = document.getElementById('content-area');
 
 function applyLayout() {
-  // Высота = стабильная высота viewport (не прыгает при drag)
-  const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
-  root.style.height = h + 'px';
-
-  // Отступ сверху = сумма двух inset:
-  // 1. safeAreaInset.top        — notch/статусбар (нужен в fullscreen)
-  // 2. contentSafeAreaInset.top — высота шапки Telegram (Закрыть / три точки)
-  // env() не работает в Telegram iOS — только JS
-  const sysTop     = (tg.safeAreaInset        && tg.safeAreaInset.top)        || 0;
-  const contentTop = (tg.contentSafeAreaInset  && tg.contentSafeAreaInset.top) || 0;
-  topInset.style.height = (sysTop + contentTop) + 'px';
+  root.style.height = (tg.viewportStableHeight || tg.viewportHeight || window.innerHeight) + 'px';
+  topInset.style.height = ((tg.safeAreaInset?.top || 0) + (tg.contentSafeAreaInset?.top || 0)) + 'px';
 }
 
-// Вызываем при загрузке и на все события Telegram
 applyLayout();
 tg.onEvent('viewportChanged',        applyLayout);
 tg.onEvent('safeAreaChanged',        applyLayout);
