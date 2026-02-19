@@ -46,7 +46,14 @@ async def index():
   html и body ЗАБЛОКИРОВАНЫ — не скроллятся, не двигаются.
   Высота = 100% окна. overflow = hidden.
 */
-html, body {
+html {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -54,6 +61,9 @@ html, body {
   font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text);
   font-size: 15px;
+  /* env() safe-area для iOS notch/dynamic island */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /*
@@ -588,16 +598,15 @@ const topInset = document.getElementById('top-inset');
 const contentArea = document.getElementById('content-area');
 
 function applyLayout() {
-  // 1. Высота всего приложения = стабильная высота viewport Telegram
+  // Высота = стабильная высота viewport Telegram
   const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
   root.style.height = h + 'px';
 
-  // 2. Отступ сверху = высота шапки Telegram
-  //    Берём максимум из доступных источников
+  // Отступ сверху = шапка Telegram (contentSafeAreaInset)
+  // env(safe-area-inset-top) уже учтён через padding-top на body
+  // Здесь добавляем только высоту шапки Telegram поверх
   const ct = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
-  const st = (tg.safeAreaInset && tg.safeAreaInset.top) || 0;
-  const top = Math.max(ct, st);
-  topInset.style.height = top + 'px';
+  topInset.style.height = ct + 'px';
 }
 
 // Вызываем при загрузке и на все события Telegram
