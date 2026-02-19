@@ -46,14 +46,7 @@ async def index():
   html и body ЗАБЛОКИРОВАНЫ — не скроллятся, не двигаются.
   Высота = 100% окна. overflow = hidden.
 */
-html {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: var(--bg);
-}
-
-body {
+html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -61,9 +54,7 @@ body {
   font-family: 'Inter', -apple-system, sans-serif;
   color: var(--text);
   font-size: 15px;
-  /* env() safe-area для iOS notch/dynamic island */
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* env() safe-area НЕ работает в Telegram iOS — используем JS */
 }
 
 /*
@@ -598,15 +589,17 @@ const topInset = document.getElementById('top-inset');
 const contentArea = document.getElementById('content-area');
 
 function applyLayout() {
-  // Высота = стабильная высота viewport Telegram
+  // Высота = стабильная высота viewport (не прыгает при drag)
   const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
   root.style.height = h + 'px';
 
-  // Отступ сверху = шапка Telegram (contentSafeAreaInset)
-  // env(safe-area-inset-top) уже учтён через padding-top на body
-  // Здесь добавляем только высоту шапки Telegram поверх
-  const ct = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
-  topInset.style.height = ct + 'px';
+  // Отступ сверху = сумма двух inset:
+  // 1. safeAreaInset.top        — notch/статусбар (нужен в fullscreen)
+  // 2. contentSafeAreaInset.top — высота шапки Telegram (Закрыть / три точки)
+  // env() не работает в Telegram iOS — только JS
+  const sysTop     = (tg.safeAreaInset        && tg.safeAreaInset.top)        || 0;
+  const contentTop = (tg.contentSafeAreaInset  && tg.contentSafeAreaInset.top) || 0;
+  topInset.style.height = (sysTop + contentTop) + 'px';
 }
 
 // Вызываем при загрузке и на все события Telegram
