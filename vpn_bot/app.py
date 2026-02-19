@@ -48,7 +48,7 @@ function updateLayout() {
     const container = document.querySelector('.container');
 
     // Добавляем безопасный отступ сверху
-    container.style.paddingTop = (totalTop + 24) + 'px';
+    container.style.paddingTop = (totalTop + 32) + 'px';
 
     // Фиксим высоту
     const height = tg.viewportStableHeight || tg.viewportHeight;
@@ -609,6 +609,7 @@ function showToast(msg) {
 </body>
 </html>
 """
+
 
 
 
