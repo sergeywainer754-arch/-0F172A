@@ -11,7 +11,6 @@ async def index():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -25,32 +24,35 @@ if (isMobile && tg.requestFullscreen) {
     tg.requestFullscreen();
 }
 
-tg.setHeaderColor('#212121');
+tg.setHeaderColor('#1c1c1c');
 tg.setBackgroundColor('#1c1c1c');
 
-document.body.style.margin = '0';
-document.documentElement.style.margin = '0';
+function updateLayout() {
+    const safeTop = (tg.safeAreaInset ? tg.safeAreaInset.top : 0)
+                  + (tg.contentSafeAreaInset ? tg.contentSafeAreaInset.top : 0);
+    document.querySelector('.container').style.paddingTop = Math.max(safeTop, 12) + 'px';
 
-function updateHeight() {
-    document.documentElement.style.height = tg.viewportHeight + 'px';
-    document.body.style.height = tg.viewportHeight + 'px';
+    const h = tg.viewportStableHeight || tg.viewportHeight;
+    if (h) {
+        document.documentElement.style.height = h + 'px';
+        document.body.style.height = h + 'px';
+    }
 }
-updateHeight();
-tg.onEvent('viewportChanged', updateHeight);
+
+window.addEventListener('DOMContentLoaded', updateLayout);
+tg.onEvent('viewportChanged', updateLayout);
+tg.onEvent('safeAreaChanged', updateLayout);
 </script>
 
 <title>ROCKET VPN</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
 :root {
-  --bg:     #1c1c1c;
-  --bg2:    #2b2b2b;
-  --card:   #2b2b2b;
-  --card2:  #333333;
-  --accent:      #7B61FF;
-  --accent2:     #9B85FF;
-  --accent-soft: rgba(123,97,255,0.15);
+  --bg:    #1c1c1c;
+  --card:  #2b2b2b;
+  --card2: #333333;
+  --accent:        #7B61FF;
+  --accent2:       #9B85FF;
+  --accent-soft:   rgba(123,97,255,0.15);
   --accent-border: rgba(123,97,255,0.3);
   --green:  #4CD964;
   --red:    #FF3B30;
@@ -72,50 +74,25 @@ html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text);
   font-size: 15px;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .container {
   max-width: 500px;
   margin: 0 auto;
-  padding-bottom: 84px;
+  padding-top: 12px;
+  padding-bottom: 86px;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* ── HEADER ── */
-.header {
-  background: var(--bg2);
-  padding: 14px 16px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky; top: 0; z-index: 50;
-  border-bottom: 1px solid var(--divider);
-  border-radius: 0 0 var(--r) var(--r);
-}
-.header-logo { display: flex; align-items: center; gap: 10px; }
-.header-avatar {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-}
-.header-title { font-size: 17px; font-weight: 700; }
-.header-sub   { font-size: 12px; color: var(--text2); margin-top: 1px; }
-.header-menu {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--card2); border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--text2); font-size: 20px;
-  transition: background 0.15s;
-}
-.header-menu:active { background: #444; }
-
-/* ── PAGES ── */
-.page { display: none; padding: 0; }
+.page { display: none; }
 .page.active { display: block; animation: fadeUp 0.2s ease; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
 .spacer { height: 8px; }
+
 .section-label {
   padding: 10px 16px 5px;
   font-size: 13px; font-weight: 600;
@@ -123,7 +100,6 @@ html, body {
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 
-/* ── SECTION CARD ── */
 .section {
   background: var(--card);
   border-radius: var(--r2);
@@ -132,7 +108,7 @@ html, body {
 }
 .section .section-label { padding: 14px 16px 6px; }
 
-/* ── KEY CARD ── */
+/* KEY CARD */
 .key-card {
   background: var(--card);
   border-radius: var(--r2);
@@ -141,10 +117,7 @@ html, body {
   transition: transform 0.1s;
 }
 .key-card:active { transform: scale(0.99); }
-.key-card-top {
-  padding: 16px;
-  display: flex; align-items: center; gap: 13px;
-}
+.key-card-top { padding: 16px; display: flex; align-items: center; gap: 13px; }
 .key-icon {
   width: 48px; height: 48px; border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
@@ -155,46 +128,38 @@ html, body {
 .key-info { flex: 1; min-width: 0; }
 .key-id   { font-size: 16px; font-weight: 700; }
 .key-meta { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-
 .key-badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 30px; }
 .badge-active  { background: rgba(76,217,100,0.15); color: var(--green); }
 .badge-expired { background: rgba(255,59,48,0.12);  color: var(--red); }
 .badge-vless   { background: var(--accent-soft); color: var(--accent2); font-size: 10px; padding: 2px 8px; border-radius: 30px; font-weight: 600; }
-
 .key-status { display: flex; align-items: center; gap: 5px; font-size: 13px; margin-top: 5px; }
 .status-dot { width: 6px; height: 6px; border-radius: 50%; }
 .dot-green { background: var(--green); }
 .dot-red   { background: var(--red); animation: blink 1.4s infinite; }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
 .key-divider { height: 1px; background: var(--divider); margin: 0 16px; }
 .key-actions { display: flex; padding: 10px 12px; gap: 8px; }
 .key-btn {
-  flex: 1; padding: 11px;
+  flex: 1; padding: 12px;
   border-radius: var(--r); border: none;
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
   cursor: pointer; transition: all 0.15s;
 }
 .key-btn:active { transform: scale(0.96); }
 .btn-ghost  { background: var(--card2); color: var(--text); }
-.btn-ghost:hover { background: #3a3a3a; }
 .btn-accent { background: var(--accent); color: #fff; }
-.btn-accent:hover { background: var(--accent2); }
+.btn-accent:active { background: var(--accent2); }
 .btn-danger-row {
-  display: block;
-  background: rgba(255,59,48,0.1); color: var(--red);
-  border: none; margin: 0 12px 12px;
-  width: calc(100% - 24px); padding: 11px;
-  border-radius: var(--r);
+  display: block; background: rgba(255,59,48,0.1); color: var(--red);
+  border: none; margin: 0 12px 12px; width: calc(100% - 24px);
+  padding: 12px; border-radius: var(--r);
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
   cursor: pointer; transition: all 0.15s;
 }
 .btn-danger-row:active { transform: scale(0.98); }
 
-/* ── MAIN BUTTON ── */
 .main-btn {
-  width: calc(100% - 24px);
-  margin: 6px 12px 10px; padding: 15px;
+  width: calc(100% - 24px); margin: 6px 12px 10px; padding: 15px;
   border-radius: var(--r2); border: none;
   background: var(--accent); color: #fff;
   font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 600;
@@ -203,7 +168,7 @@ html, body {
 }
 .main-btn:active { transform: scale(0.98); background: var(--accent2); }
 
-/* ── BUY BANNER ── */
+/* BANNERS */
 .buy-banner {
   margin: 8px 12px;
   background: linear-gradient(135deg, #2d1f66, #1e1450);
@@ -217,11 +182,9 @@ html, body {
 }
 .buy-banner h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .buy-banner p  { font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 16px; line-height: 1.5; }
-.buy-banner .main-btn { margin: 0; width: 100%; border-radius: var(--r); }
 
-/* ── BALANCE ── */
 .balance-block {
-  margin: 8px 12px 0;
+  margin: 0 12px 0;
   background: linear-gradient(135deg, #2d1f66, #1e1450);
   border-radius: var(--r2); padding: 24px 20px;
   border: 1px solid var(--accent-border);
@@ -235,19 +198,16 @@ html, body {
 .balance-val { font-size: 40px; font-weight: 700; line-height: 1; }
 .balance-val span { font-size: 24px; color: var(--accent2); margin-right: 4px; }
 
-/* ── LIST ITEM ── */
+/* LIST */
 .list-item {
-  display: flex; align-items: center;
-  padding: 13px 16px; gap: 13px;
-  cursor: pointer; transition: background 0.1s;
-  border-bottom: 1px solid var(--divider);
+  display: flex; align-items: center; padding: 13px 16px; gap: 13px;
+  cursor: pointer; transition: background 0.1s; border-bottom: 1px solid var(--divider);
 }
 .list-item:last-child { border-bottom: none; }
 .list-item:active { background: rgba(255,255,255,0.04); }
 .li-icon {
   width: 40px; height: 40px; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
 }
 .li-icon.purple { background: var(--accent-soft); }
 .li-icon.blue   { background: rgba(42,171,238,0.12); }
@@ -262,10 +222,9 @@ html, body {
 .li-value.expense { color: var(--red); }
 .li-chevron { color: var(--text3); font-size: 14px; }
 
-/* ── AMOUNT INPUT ── */
+/* AMOUNT */
 .amount-wrap {
-  margin: 0 16px 12px;
-  background: #222; border-radius: var(--r);
+  margin: 0 16px 12px; background: #222; border-radius: var(--r);
   display: flex; align-items: center; padding: 0 14px;
   border: 1.5px solid transparent; transition: border-color 0.2s;
 }
@@ -279,26 +238,21 @@ html, body {
 .quick-row { display: flex; gap: 7px; padding: 0 16px 14px; }
 .q-btn {
   flex: 1; padding: 10px 4px; border-radius: var(--r);
-  border: 1px solid var(--divider); background: #222;
-  color: var(--text2);
+  border: 1px solid var(--divider); background: #222; color: var(--text2);
   font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
   cursor: pointer; transition: all 0.15s; text-align: center;
 }
-.q-btn.sel, .q-btn:active {
-  border-color: var(--accent); color: var(--accent2); background: var(--accent-soft);
-}
+.q-btn.sel { border-color: var(--accent); color: var(--accent2); background: var(--accent-soft); }
 
-/* ── REF ── */
+/* REF */
 .ref-stats { display: grid; grid-template-columns: 1fr 1fr; }
 .ref-stat  { padding: 20px 16px; text-align: center; border-right: 1px solid var(--divider); }
 .ref-stat:last-child { border-right: none; }
 .ref-stat-val { font-size: 28px; font-weight: 700; color: var(--accent2); margin-bottom: 4px; }
 .ref-stat-lbl { font-size: 12px; color: var(--text2); }
 .ref-link-row {
-  display: flex; align-items: center;
-  margin: 0 16px 14px; background: #222;
-  border-radius: var(--r); padding: 10px 12px; gap: 10px;
-  border: 1px solid var(--accent-border);
+  display: flex; align-items: center; margin: 0 16px 14px; background: #222;
+  border-radius: var(--r); padding: 10px 12px; gap: 10px; border: 1px solid var(--accent-border);
 }
 .ref-link-txt { flex: 1; font-size: 13px; color: var(--accent2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .copy-pill {
@@ -309,7 +263,7 @@ html, body {
 }
 .copy-pill:active { background: var(--accent2); transform: scale(0.96); }
 
-/* ── STEPS ── */
+/* STEPS */
 .step-item {
   display: flex; align-items: flex-start; gap: 13px;
   padding: 13px 16px; border-bottom: 1px solid var(--divider);
@@ -325,18 +279,14 @@ html, body {
 .step-text { font-size: 14px; color: var(--text2); line-height: 1.6; padding-top: 3px; }
 .step-text strong { color: var(--text); }
 
-/* ── FAQ ── */
+/* FAQ */
 .faq-item { border-bottom: 1px solid var(--divider); overflow: hidden; }
 .faq-item:last-child { border-bottom: none; }
-.faq-q {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 14px 16px; cursor: pointer; gap: 12px; transition: background 0.1s;
-}
+.faq-q { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; gap: 12px; }
 .faq-q:active { background: rgba(255,255,255,0.03); }
 .faq-q-text { font-size: 15px; font-weight: 500; }
 .faq-chevron {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--card2);
+  width: 22px; height: 22px; border-radius: 50%; background: var(--card2);
   display: flex; align-items: center; justify-content: center;
   color: var(--text2); font-size: 11px; flex-shrink: 0;
   transition: transform 0.25s, background 0.2s;
@@ -346,32 +296,29 @@ html, body {
 .faq-item.open .faq-ans { max-height: 200px; }
 .faq-ans-inner { padding: 0 16px 14px; font-size: 14px; color: var(--text2); line-height: 1.65; }
 
-/* ── BOTTOM NAV ── */
+/* BOTTOM NAV */
 .bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--bg2);
+  background: rgba(28,28,28,0.97);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--divider);
   border-radius: var(--r2) var(--r2) 0 0;
   display: flex; justify-content: space-around;
-  padding: 8px 0 22px;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 16px));
   z-index: 100;
 }
 .nav-btn {
-  background: none; border: none;
-  color: var(--text3); font-size: 10px; font-weight: 500;
-  font-family: 'Inter', sans-serif;
+  background: none; border: none; color: var(--text3);
+  font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
-  cursor: pointer; transition: color 0.15s; padding: 4px 14px;
+  cursor: pointer; transition: color 0.15s; padding: 4px 14px; line-height: 1;
 }
-.nav-btn .nav-icon-wrap {
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-}
+.nav-icon-wrap { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
 .nav-btn.active { color: var(--accent2); }
 
-/* ── TOAST ── */
+/* TOAST */
 .toast {
-  position: fixed; bottom: 92px; left: 50%;
+  position: fixed; bottom: 100px; left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: #3a3a3a; color: #fff;
   padding: 11px 22px; border-radius: 30px;
@@ -389,21 +336,8 @@ html, body {
 
 <div class="container">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-logo">
-      <div class="header-avatar">🚀</div>
-      <div>
-        <div class="header-title">ROCKET VPN</div>
-        <div class="header-sub">Быстро · Безопасно · Стабильно</div>
-      </div>
-    </div>
-    <button class="header-menu">···</button>
-  </div>
-
-  <!-- ═══ VPN PAGE ═══ -->
+  <!-- VPN -->
   <div id="vpnPage" class="page active">
-    <div class="spacer"></div>
     <div class="section-label">Мои ключи</div>
 
     <div class="key-card">
@@ -411,7 +345,7 @@ html, body {
         <div class="key-icon active-icon">🛡️</div>
         <div class="key-info">
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-            <div class="key-id">#ROCKET-7821</div>
+            <span class="key-id">#ROCKET-7821</span>
             <span class="badge-vless">VLESS</span>
           </div>
           <div class="key-meta">
@@ -436,7 +370,7 @@ html, body {
         <div class="key-icon expired-icon">🔑</div>
         <div class="key-info">
           <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
-            <div class="key-id">#ROCKET-4103</div>
+            <span class="key-id">#ROCKET-4103</span>
             <span class="badge-vless">VLESS</span>
           </div>
           <div class="key-meta">
@@ -465,37 +399,26 @@ html, body {
     <div class="spacer"></div>
   </div>
 
-  <!-- ═══ WALLET PAGE ═══ -->
+  <!-- WALLET -->
   <div id="walletPage" class="page">
-    <div class="spacer"></div>
-
     <div class="balance-block">
       <div class="balance-lbl">Баланс кошелька</div>
       <div class="balance-val"><span>₽</span>126.25</div>
     </div>
-
     <div class="spacer"></div>
-
     <div class="section">
       <div class="section-label">Способ пополнения</div>
       <div class="list-item">
         <div class="li-icon blue">⚡</div>
-        <div class="li-content">
-          <div class="li-title">СБП</div>
-          <div class="li-sub">Система быстрых платежей</div>
-        </div>
+        <div class="li-content"><div class="li-title">СБП</div><div class="li-sub">Система быстрых платежей</div></div>
         <div class="li-right"><span class="li-chevron">›</span></div>
       </div>
       <div class="list-item" style="border-bottom:none">
         <div class="li-icon purple">💳</div>
-        <div class="li-content">
-          <div class="li-title">Банковская карта</div>
-          <div class="li-sub">Visa, MasterCard, МИР</div>
-        </div>
+        <div class="li-content"><div class="li-title">Банковская карта</div><div class="li-sub">Visa, MasterCard, МИР</div></div>
         <div class="li-right"><span class="li-chevron">›</span></div>
       </div>
     </div>
-
     <div class="section" style="padding-top:12px">
       <div class="section-label" style="padding-top:2px">Сумма пополнения</div>
       <div class="amount-wrap">
@@ -510,56 +433,36 @@ html, body {
         <button class="q-btn" onclick="setAmt('',this)">Своя</button>
       </div>
     </div>
-
     <button class="main-btn" onclick="showToast('⚡ Переход к оплате...')">⚡ Перейти к пополнению</button>
-
     <div class="section">
       <div class="section-label">История операций</div>
       <div class="list-item">
         <div class="li-icon green">💳</div>
-        <div class="li-content">
-          <div class="li-title">Пополнение</div>
-          <div class="li-sub">19 фев 2026, 14:23</div>
-        </div>
+        <div class="li-content"><div class="li-title">Пополнение</div><div class="li-sub">19 фев 2026, 14:23</div></div>
         <div class="li-right"><span class="li-value income">+500 ₽</span></div>
       </div>
       <div class="list-item">
         <div class="li-icon purple">🚀</div>
-        <div class="li-content">
-          <div class="li-title">Оплата VPN · #ROCKET-7821</div>
-          <div class="li-sub">18 фев 2026, 10:05</div>
-        </div>
+        <div class="li-content"><div class="li-title">Оплата VPN · #ROCKET-7821</div><div class="li-sub">18 фев 2026, 10:05</div></div>
         <div class="li-right"><span class="li-value expense">−299 ₽</span></div>
       </div>
       <div class="list-item" style="border-bottom:none">
         <div class="li-icon orange">👥</div>
-        <div class="li-content">
-          <div class="li-title">Реферальный бонус</div>
-          <div class="li-sub">15 фев 2026, 09:40</div>
-        </div>
+        <div class="li-content"><div class="li-title">Реферальный бонус</div><div class="li-sub">15 фев 2026, 09:40</div></div>
         <div class="li-right"><span class="li-value income">+74.25 ₽</span></div>
       </div>
     </div>
     <div class="spacer"></div>
   </div>
 
-  <!-- ═══ REF PAGE ═══ -->
+  <!-- REF -->
   <div id="refPage" class="page">
-    <div class="spacer"></div>
-
     <div class="section">
       <div class="ref-stats">
-        <div class="ref-stat">
-          <div class="ref-stat-val">12</div>
-          <div class="ref-stat-lbl">Рефералов</div>
-        </div>
-        <div class="ref-stat">
-          <div class="ref-stat-val">₽740</div>
-          <div class="ref-stat-lbl">Заработано</div>
-        </div>
+        <div class="ref-stat"><div class="ref-stat-val">12</div><div class="ref-stat-lbl">Рефералов</div></div>
+        <div class="ref-stat"><div class="ref-stat-val">₽740</div><div class="ref-stat-lbl">Заработано</div></div>
       </div>
     </div>
-
     <div class="section">
       <div class="section-label">Ваша реферальная ссылка</div>
       <div style="padding:0 16px 8px;font-size:13px;color:var(--text2);line-height:1.5">
@@ -570,28 +473,17 @@ html, body {
         <button class="copy-pill" onclick="showToast('✓ Ссылка скопирована')">Копировать</button>
       </div>
     </div>
-
     <div class="section">
       <div class="section-label">Как это работает</div>
-      <div class="step-item">
-        <div class="step-circle">1</div>
-        <div class="step-text"><strong>Поделитесь ссылкой</strong> с другом или в соцсетях</div>
-      </div>
-      <div class="step-item">
-        <div class="step-circle">2</div>
-        <div class="step-text">Друг регистрируется и <strong>оплачивает VPN</strong></div>
-      </div>
-      <div class="step-item">
-        <div class="step-circle">3</div>
-        <div class="step-text">Вы получаете <strong style="color:var(--accent2)">20% бонус</strong> автоматически на кошелёк</div>
-      </div>
+      <div class="step-item"><div class="step-circle">1</div><div class="step-text"><strong>Поделитесь ссылкой</strong> с другом или в соцсетях</div></div>
+      <div class="step-item"><div class="step-circle">2</div><div class="step-text">Друг регистрируется и <strong>оплачивает VPN</strong></div></div>
+      <div class="step-item"><div class="step-circle">3</div><div class="step-text">Вы получаете <strong style="color:var(--accent2)">20% бонус</strong> автоматически на кошелёк</div></div>
     </div>
     <div class="spacer"></div>
   </div>
 
-  <!-- ═══ FAQ PAGE ═══ -->
+  <!-- FAQ -->
   <div id="faqPage" class="page">
-    <div class="spacer"></div>
     <div class="section">
       <div class="faq-item" onclick="toggleFaq(this)">
         <div class="faq-q"><span class="faq-q-text">Как подключить VPN?</span><div class="faq-chevron">▾</div></div>
@@ -621,12 +513,11 @@ html, body {
     <div class="spacer"></div>
   </div>
 
-</div><!-- /container -->
+</div>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
-
-  <button onclick="showPage('vpnPage', this)" class="nav-btn active" id="btn-vpn">
+  <button onclick="showPage('vpnPage',this)" class="nav-btn active">
     <div class="nav-icon-wrap">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
         <path d="M13 3C13 3 7 8 7 14a6 6 0 0 0 12 0c0-6-6-11-6-11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
@@ -636,8 +527,7 @@ html, body {
     </div>
     VPN
   </button>
-
-  <button onclick="showPage('walletPage', this)" class="nav-btn" id="btn-wallet">
+  <button onclick="showPage('walletPage',this)" class="nav-btn">
     <div class="nav-icon-wrap">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
         <rect x="3" y="7" width="20" height="13" rx="4" stroke="currentColor" stroke-width="1.6"/>
@@ -648,8 +538,7 @@ html, body {
     </div>
     Кошелёк
   </button>
-
-  <button onclick="showPage('refPage', this)" class="nav-btn" id="btn-ref">
+  <button onclick="showPage('refPage',this)" class="nav-btn">
     <div class="nav-icon-wrap">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
         <circle cx="10" cy="9" r="3.5" stroke="currentColor" stroke-width="1.6"/>
@@ -660,8 +549,7 @@ html, body {
     </div>
     Реф. прог.
   </button>
-
-  <button onclick="showPage('faqPage', this)" class="nav-btn" id="btn-faq">
+  <button onclick="showPage('faqPage',this)" class="nav-btn">
     <div class="nav-icon-wrap">
       <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
         <circle cx="13" cy="13" r="10" stroke="currentColor" stroke-width="1.6"/>
@@ -671,7 +559,6 @@ html, body {
     </div>
     FAQ
   </button>
-
 </div>
 
 <script>
@@ -680,6 +567,7 @@ function showPage(pageId, el) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(pageId).classList.add('active');
   el.classList.add('active');
+  document.querySelector('.container').scrollTop = 0;
 }
 
 function toggleFaq(el) { el.classList.toggle('open'); }
