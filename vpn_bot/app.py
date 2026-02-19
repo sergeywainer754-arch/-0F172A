@@ -15,35 +15,37 @@ async def index():
 <title>ROCKET VPN</title>
 <style>
 :root {
-  --bg:           #1c1c1c;
-  --card:         #2b2b2b;
-  --card2:        #333;
-  --accent:       #7B61FF;
-  --accent2:      #9B85FF;
-  --asoft:        rgba(123,97,255,0.15);
-  --aborder:      rgba(123,97,255,0.3);
-  --green:        #4CD964;
-  --red:          #FF3B30;
-  --orange:       #FF9500;
-  --blue:         #2AABEE;
-  --text:         #fff;
-  --text2:        #aaa;
-  --text3:        #555;
-  --div:          rgba(255,255,255,0.07);
-  --r:            18px;
-  --r2:           22px;
-  --nav-h:        62px;
+  --bg:       #1a1a1a;
+  --card:     #252525;
+  --card2:    #2f2f2f;
+  --accent:   #7B61FF;
+  --accent2:  #9B85FF;
+  --asoft:    rgba(123,97,255,0.15);
+  --aborder:  rgba(123,97,255,0.3);
+  --green:    #4CD964;
+  --red:      #FF3B30;
+  --orange:   #FF9500;
+  --blue:     #2AABEE;
+  --text:     #fff;
+  --text2:    #999;
+  --text3:    #4a4a4a;
+  --div:      rgba(255,255,255,0.07);
+  --r:        18px;
+  --r2:       22px;
+
+  /* Высота навбара без safe area */
+  --nav-inner-h: 64px;
+  /* Полная высота навбара с safe area снизу */
+  --nav-h: calc(var(--nav-inner-h) + env(safe-area-inset-bottom, 0px));
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-html {
-  height: 100%;
-  /* Используем CSS env() для safe area — работает везде без JS */
-  background: var(--bg);
+*, *::before, *::after {
+  box-sizing: border-box; margin: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
-body {
+/* body и html НЕ скроллятся */
+html, body {
   height: 100%;
   overflow: hidden;
   background: var(--bg);
@@ -52,83 +54,114 @@ body {
   font-size: 15px;
 }
 
-/* ── LAYOUT ──
-   Шапка Telegram (кнопки Закрыть/три точки) занимает место сверху.
-   Мы используем padding-top через env(safe-area-inset-top) +
-   дополнительный отступ через --tg-content-safe-area-inset-top
-   который Telegram сам проставляет как CSS переменную */
-#app {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  /* Отступ сверху под шапку Telegram — CSS переменная от Telegram */
-  padding-top: var(--tg-content-safe-area-inset-top, var(--tg-safe-area-inset-top, env(safe-area-inset-top, 0px)));
-  padding-bottom: var(--tg-safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+/* ════════════════════════════════════
+   LAYOUT
+   #wrap = весь экран (position:fixed)
+   #scroll = скроллящаяся зона
+   .bottom-nav = зафиксированный навбар
+   ════════════════════════════════════ */
+#wrap {
+  position: fixed;
+  inset: 0;
+  /* Отступ сверху = высота шапки Telegram (CSS-переменная от Telegram SDK) */
+  padding-top: var(--tg-content-safe-area-inset-top, var(--tg-safe-area-inset-top, 0px));
+  /* Отступ снизу = высота навбара */
+  padding-bottom: var(--nav-h);
+  background: var(--bg);
 }
 
-/* Область прокрутки */
-#scrollArea {
-  flex: 1;
+/* Только эта зона скроллится */
+#scroll {
+  height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding-bottom: 16px;
+  padding-bottom: 12px;
 }
 
-/* Навбар внизу — фиксированная высота */
+/* ════════════════════════════════════
+   BOTTOM NAV — по ТЗ:
+   position:fixed, овальный контейнер,
+   плавает над фоном, учитывает safe-area
+   ════════════════════════════════════ */
 .bottom-nav {
-  flex-shrink: 0;
-  height: var(--nav-h);
-  background: #141414;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  /* Паддинг снизу для safe area (notch/home indicator) */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Фон темнее основного */
+  background: #111;
   display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10px;
+}
+
+/* Большой овальный контейнер — главный элемент по ТЗ */
+.nav-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: min(320px, 88vw);
+  height: 52px;
+  background: #222;
+  border-radius: 100px;           /* большой овал */
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 0 6px;
+  gap: 2px;
+}
+
+/* Кнопка внутри овала */
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-}
-
-.nav-inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: min(340px, 90vw);
-}
-
-.nav-btn {
-  background: none; border: none;
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  cursor: pointer; padding: 4px 6px;
+  gap: 3px;
+  height: 42px;
+  border-radius: 100px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   font-family: 'Inter', sans-serif;
-  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, color 0.2s;
+  color: var(--text3);
+  padding: 0 4px;
 }
 
-.nav-icon-wrap {
-  width: 40px; height: 40px; border-radius: 50%;
-  border: 1.5px solid var(--text3);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text3);
-  transition: all 0.2s;
-}
-.nav-btn.active .nav-icon-wrap {
-  border-color: var(--accent2);
+/* Активная кнопка — другой цвет фона внутри овала */
+.nav-btn.active {
+  background: rgba(123,97,255,0.18);
   color: var(--accent2);
-  background: var(--asoft);
+}
+
+.nav-btn svg {
+  display: block;
+  transition: color 0.2s;
 }
 
 .nav-label {
-  font-size: 10px; font-weight: 500;
-  color: var(--text3); transition: color 0.2s;
+  font-size: 9.5px;
+  font-weight: 600;
   white-space: nowrap;
+  letter-spacing: 0.1px;
+  transition: color 0.2s;
 }
-.nav-btn.active .nav-label { color: var(--accent2); }
 
-/* ── PAGES ── */
+/* ════ PAGES ════ */
 .page { display: none; }
 .page.active { display: block; animation: fi .15s ease; }
 @keyframes fi { from{opacity:0} to{opacity:1} }
 .spacer { height: 10px; }
 
-/* ── SECTION ── */
+/* ════ SECTION ════ */
 .sl {
   padding: 10px 16px 5px;
   font-size: 11px; font-weight: 600;
@@ -140,7 +173,7 @@ body {
 }
 .section > .sl { padding: 13px 16px 5px; }
 
-/* ── KEY CARD ── */
+/* ════ KEY CARD ════ */
 .kc { background: var(--card); border-radius: var(--r2); margin: 6px 12px; overflow: hidden; }
 .kc-top { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
 .ki {
@@ -154,9 +187,9 @@ body {
 .ki-id   { font-size: 16px; font-weight: 700; }
 .ki-meta { font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 7px; margin-top: 4px; }
 .badge { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 30px; }
-.b-ok  { background: rgba(76,217,100,0.15); color: var(--green); }
-.b-no  { background: rgba(255,59,48,0.12); color: var(--red); }
-.b-vl  { background: var(--asoft); color: var(--accent2); font-size: 10px; padding: 2px 8px; border-radius: 30px; font-weight: 600; }
+.b-ok { background: rgba(76,217,100,0.15); color: var(--green); }
+.b-no { background: rgba(255,59,48,0.12); color: var(--red); }
+.b-vl { background: var(--asoft); color: var(--accent2); font-size: 10px; padding: 2px 8px; border-radius: 30px; font-weight: 600; }
 .ki-st { display: flex; align-items: center; gap: 5px; font-size: 13px; margin-top: 5px; }
 .dot   { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .dot.g { background: var(--green); }
@@ -189,7 +222,7 @@ body {
 }
 .main-btn:active { opacity: .85; }
 
-/* ── BANNER ── */
+/* ════ BANNER ════ */
 .banner {
   margin: 6px 12px;
   background: linear-gradient(135deg,#2d1f66,#1e1450);
@@ -203,7 +236,7 @@ body {
 .banner h3 { font-size:16px; font-weight:700; margin-bottom:5px; }
 .banner p  { font-size:13px; color:rgba(255,255,255,.6); margin-bottom:14px; line-height:1.5; }
 
-/* ── BALANCE ── */
+/* ════ BALANCE ════ */
 .balance {
   margin: 0 12px;
   background: linear-gradient(135deg,#2d1f66,#1e1450);
@@ -218,7 +251,7 @@ body {
 .bal-val { font-size:38px; font-weight:700; line-height:1; }
 .bal-val span { font-size:22px; color:var(--accent2); margin-right:3px; }
 
-/* ── LIST ── */
+/* ════ LIST ════ */
 .li {
   display:flex; align-items:center; padding:12px 16px; gap:13px;
   border-bottom:1px solid var(--div);
@@ -236,15 +269,15 @@ body {
 .li-cnt { flex:1; min-width:0; }
 .li-t { font-size:15px; font-weight:500; }
 .li-s { font-size:13px; color:var(--text2); margin-top:2px; }
-.li-r { display:flex; align-items:center; gap:6px; }
+.li-r { display:flex; align-items:center; }
 .li-v { font-size:15px; font-weight:600; }
 .li-v.inc { color:var(--green); }
 .li-v.exp { color:var(--red); }
-.chev { color:var(--text3); font-size:20px; line-height:1; }
+.chev { color:var(--text3); font-size:20px; }
 
-/* ── AMOUNT ── */
+/* ════ AMOUNT ════ */
 .amt-wrap {
-  margin:0 16px 12px; background:#222; border-radius:var(--r);
+  margin:0 16px 12px; background:#1e1e1e; border-radius:var(--r);
   display:flex; align-items:center; padding:0 14px;
   border:1.5px solid transparent; transition:border-color .2s;
 }
@@ -258,55 +291,44 @@ body {
 .q-row { display:flex; gap:7px; padding:0 16px 14px; }
 .q-btn {
   flex:1; padding:10px 4px; border-radius:12px;
-  border:1px solid var(--div); background:#222; color:var(--text2);
+  border:1px solid var(--div); background:#1e1e1e; color:var(--text2);
   font-family:'Inter',sans-serif; font-size:14px; font-weight:600; cursor:pointer;
-  transition: all .15s;
 }
 .q-btn.sel { border-color:var(--accent); color:var(--accent2); background:var(--asoft); }
 
-/* ── REF ── */
+/* ════ REF ════ */
 .ref-stats { display:grid; grid-template-columns:1fr 1fr; }
 .ref-stat  { padding:18px 16px; text-align:center; border-right:1px solid var(--div); }
 .ref-stat:last-child { border-right:none; }
 .rsv { font-size:26px; font-weight:700; color:var(--accent2); margin-bottom:4px; }
 .rsl { font-size:12px; color:var(--text2); }
 .ref-link {
-  display:flex; align-items:center; margin:0 16px 14px; background:#222;
+  display:flex; align-items:center; margin:0 16px 14px; background:#1e1e1e;
   border-radius:var(--r); padding:10px 12px; gap:10px; border:1px solid var(--aborder);
 }
 .rl-txt { flex:1; font-size:13px; color:var(--accent2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cp-btn {
   background:var(--accent); color:#fff; border:none;
   border-radius:30px; padding:7px 14px;
-  font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
-  cursor:pointer; flex-shrink:0;
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:600; cursor:pointer;
 }
-.cp-btn:active { opacity:.8; }
 
-/* ── STEPS ── */
-.step {
-  display:flex; align-items:flex-start; gap:13px;
-  padding:12px 16px; border-bottom:1px solid var(--div);
-}
+/* ════ STEPS ════ */
+.step { display:flex; align-items:flex-start; gap:13px; padding:12px 16px; border-bottom:1px solid var(--div); }
 .step:last-child { border-bottom:none; }
 .step-n {
   width:28px; height:28px; border-radius:50%;
   background:var(--asoft); border:1.5px solid var(--aborder);
   display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; color:var(--accent2);
-  flex-shrink:0; margin-top:2px;
+  font-size:12px; font-weight:700; color:var(--accent2); flex-shrink:0; margin-top:2px;
 }
 .step-t { font-size:14px; color:var(--text2); line-height:1.6; padding-top:3px; }
 .step-t strong { color:var(--text); }
 
-/* ── FAQ ── */
+/* ════ FAQ ════ */
 .faq-i { border-bottom:1px solid var(--div); overflow:hidden; }
 .faq-i:last-child { border-bottom:none; }
-.faq-q {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:13px 16px; cursor:pointer; gap:12px;
-}
-.faq-q:active { background:rgba(255,255,255,.03); }
+.faq-q { display:flex; justify-content:space-between; align-items:center; padding:13px 16px; cursor:pointer; gap:12px; }
 .faq-qt { font-size:15px; font-weight:500; }
 .faq-ch {
   width:22px; height:22px; border-radius:50%; background:var(--card2);
@@ -319,11 +341,11 @@ body {
 .faq-i.open .faq-a { max-height:300px; }
 .faq-ai { padding:0 16px 14px; font-size:14px; color:var(--text2); line-height:1.65; }
 
-/* ── TOAST ── */
+/* ════ TOAST ════ */
 .toast {
-  position:fixed; bottom:80px; left:50%;
+  position:fixed; bottom:100px; left:50%;
   transform:translateX(-50%) translateY(16px);
-  background:#3a3a3a; color:#fff;
+  background:#333; color:#fff;
   padding:10px 22px; border-radius:30px;
   font-size:14px; font-weight:500;
   z-index:999; opacity:0;
@@ -337,8 +359,11 @@ body {
 
 <div id="toast" class="toast"></div>
 
-<div id="app">
-  <div id="scrollArea">
+<!-- WRAP: весь экран, отступ сверху под шапку Telegram -->
+<div id="wrap">
+
+  <!-- SCROLL: только эта зона скроллится -->
+  <div id="scroll">
 
     <!-- VPN -->
     <div id="vpnPage" class="page active">
@@ -503,84 +528,74 @@ body {
       <div class="spacer"></div>
     </div>
 
-  </div><!-- /scrollArea -->
+  </div><!-- /scroll -->
+</div><!-- /wrap -->
 
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav">
-    <div class="nav-inner">
+<!-- BOTTOM NAV — вне #wrap, position:fixed -->
+<nav class="bottom-nav">
+  <div class="nav-pill">
 
-      <button class="nav-btn active" onclick="showPage('vpnPage',this)">
-        <div class="nav-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2.5C12 2.5 6.5 7.5 6.5 13a5.5 5.5 0 0 0 11 0c0-5.5-5.5-10.5-5.5-10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-            <circle cx="12" cy="13" r="2" fill="currentColor"/>
-            <path d="M9.8 18.5L8.5 20.5M14.2 18.5L15.5 20.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="nav-label">VPN</span>
-      </button>
+    <button class="nav-btn active" onclick="showPage('vpnPage',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2.5C12 2.5 6.5 7.5 6.5 13a5.5 5.5 0 0 0 11 0c0-5.5-5.5-10.5-5.5-10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="2" fill="currentColor"/>
+        <path d="M9.8 18.5L8.5 20.5M14.2 18.5L15.5 20.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-label">VPN</span>
+    </button>
 
-      <button class="nav-btn" onclick="showPage('walletPage',this)">
-        <div class="nav-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <rect x="2.5" y="6.5" width="19" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M2.5 10.5h19" stroke="currentColor" stroke-width="1.8"/>
-            <rect x="15.5" y="13" width="3.5" height="2.5" rx="1.2" fill="currentColor"/>
-            <path d="M6.5 6.5V5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8"/>
-          </svg>
-        </div>
-        <span class="nav-label">Кошелёк</span>
-      </button>
+    <button class="nav-btn" onclick="showPage('walletPage',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <rect x="2.5" y="6.5" width="19" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M2.5 10.5h19" stroke="currentColor" stroke-width="1.8"/>
+        <rect x="15.5" y="13" width="3.5" height="2.5" rx="1.2" fill="currentColor"/>
+        <path d="M6.5 6.5V5.5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.8"/>
+      </svg>
+      <span class="nav-label">Кошелёк</span>
+    </button>
 
-      <button class="nav-btn" onclick="showPage('refPage',this)">
-        <div class="nav-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
-            <circle cx="17" cy="9" r="2.3" stroke="currentColor" stroke-width="1.6"/>
-            <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M17 14.5c2 .3 3.5 1.8 3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <span class="nav-label">Реф. прог.</span>
-      </button>
+    <button class="nav-btn" onclick="showPage('refPage',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.8"/>
+        <circle cx="17" cy="9" r="2.3" stroke="currentColor" stroke-width="1.6"/>
+        <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M17 14.5c2 .3 3.5 1.8 3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-label">Реф. прог.</span>
+    </button>
 
-      <button class="nav-btn" onclick="showPage('faqPage',this)">
-        <div class="nav-icon-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
-            <path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2.2-2.5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-            <circle cx="12" cy="17.5" r="0.9" fill="currentColor"/>
-          </svg>
-        </div>
-        <span class="nav-label">FAQ</span>
-      </button>
+    <button class="nav-btn" onclick="showPage('faqPage',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.8-2.5 2.2-2.5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="12" cy="17.5" r="0.9" fill="currentColor"/>
+      </svg>
+      <span class="nav-label">FAQ</span>
+    </button>
 
-    </div>
-  </nav>
-
-</div><!-- /app -->
+  </div>
+</nav>
 
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-if (isMobile && tg.requestFullscreen) {
-  tg.requestFullscreen();
+// Мобильные — fullscreen, ПК — только expand
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  if (tg.requestFullscreen) tg.requestFullscreen();
+  else tg.expand();
 } else {
   tg.expand();
 }
 
-tg.setHeaderColor('#1c1c1c');
-tg.setBackgroundColor('#1c1c1c');
+tg.setHeaderColor('#1a1a1a');
+tg.setBackgroundColor('#1a1a1a');
 
-// Подстраиваем высоту под реальный viewport Telegram
+// Подстраиваем высоту #wrap под реальный viewport Telegram
 function fixHeight() {
   const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
-  document.getElementById('app').style.height = h + 'px';
+  document.getElementById('wrap').style.height = h + 'px';
 }
-
 tg.onEvent('viewportChanged', fixHeight);
 fixHeight();
 
@@ -589,7 +604,7 @@ function showPage(id, el) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   el.classList.add('active');
-  document.getElementById('scrollArea').scrollTop = 0;
+  document.getElementById('scroll').scrollTop = 0;
 }
 
 function toggleFaq(el) { el.classList.toggle('open'); }
@@ -609,6 +624,5 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 </script>
-
 </body>
 </html>"""
