@@ -18,26 +18,23 @@ async def index():
 const tg = window.Telegram.WebApp;
 tg.ready();
 
-// Определяем устройство
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-// Android — fullscreen
+// ✅ Android — fullscreen
 if (isAndroid && tg.requestFullscreen) {
     tg.requestFullscreen();
 }
 
-// iOS — только expand
-if (isIOS) {
-    tg.expand();
+// ✅ iPhone — тоже fullscreen
+if (isIOS && tg.requestFullscreen) {
+    tg.requestFullscreen();
 }
 
 // ПК — просто expand
 if (!isAndroid && !isIOS) {
     tg.expand();
 }
-
-
 
 tg.setHeaderColor('#1c1c1c');
 tg.setBackgroundColor('#1c1c1c');
@@ -51,7 +48,7 @@ function updateLayout() {
     const container = document.querySelector('.container');
 
     // Добавляем безопасный отступ сверху
-    container.style.paddingTop = (totalTop + 20) + 'px';
+    container.style.paddingTop = (totalTop + 24) + 'px';
 
     // Фиксим высоту
     const height = tg.viewportStableHeight || tg.viewportHeight;
@@ -612,5 +609,6 @@ function showToast(msg) {
 </body>
 </html>
 """
+
 
 
