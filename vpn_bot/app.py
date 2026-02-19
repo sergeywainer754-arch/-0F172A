@@ -5,8 +5,7 @@ app = FastAPI()
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return """
-<!DOCTYPE html>
+    return """<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -17,80 +16,62 @@ async def index():
 <script>
 const tg = window.Telegram.WebApp;
 tg.ready();
+tg.expand();
 
-const isAndroid = /Android/i.test(navigator.userAgent);
-const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-// ✅ Android — fullscreen
-if (isAndroid && tg.requestFullscreen) {
-    tg.requestFullscreen();
-}
-
-// ✅ iPhone — тоже fullscreen
-if (isIOS && tg.requestFullscreen) {
-    tg.requestFullscreen();
-}
-
-// ПК — просто expand
-if (!isAndroid && !isIOS) {
-    tg.expand();
-}
+// Fullscreen для мобильных
+if (tg.requestFullscreen) tg.requestFullscreen();
 
 tg.setHeaderColor('#1c1c1c');
 tg.setBackgroundColor('#1c1c1c');
 
 function updateLayout() {
+  const safeTop    = (tg.safeAreaInset        && tg.safeAreaInset.top)        || 0;
+  const contentTop = (tg.contentSafeAreaInset && tg.contentSafeAreaInset.top) || 0;
+  const topPad     = Math.max(safeTop, contentTop);
 
-    const safeTop = tg.safeAreaInset ? tg.safeAreaInset.top : 0;
-    const contentTop = tg.contentSafeAreaInset ? tg.contentSafeAreaInset.top : 0;
+  const container = document.querySelector('.container');
+  if (container) container.style.paddingTop = (topPad + 8) + 'px';
 
-    // 👇 вот тут регулируем высоту
-    const topPadding = safeTop + contentTop + 20;
-
-    document.querySelector('.container').style.paddingTop = topPadding + 'px';
-
-    const h = tg.viewportStableHeight || tg.viewportHeight;
-    if (h) {
-        document.documentElement.style.height = h + 'px';
-        document.body.style.height = h + 'px';
-    }
+  const h = tg.viewportStableHeight || tg.viewportHeight || window.innerHeight;
+  document.documentElement.style.setProperty('--vh', h + 'px');
 }
 
-window.addEventListener('DOMContentLoaded', updateLayout);
-tg.onEvent('viewportChanged', updateLayout);
-tg.onEvent('safeAreaChanged', updateLayout);
-
-setTimeout(updateLayout, 300);
-setTimeout(updateLayout, 800);
-
+document.addEventListener('DOMContentLoaded', updateLayout);
+tg.onEvent('viewportChanged',  updateLayout);
+tg.onEvent('safeAreaChanged',  updateLayout);
+tg.onEvent('contentSafeAreaChanged', updateLayout);
 </script>
 
 <title>ROCKET VPN</title>
 <style>
 :root {
-  --bg:    #1c1c1c;
-  --card:  #2b2b2b;
-  --card2: #333333;
+  --bg:            #1c1c1c;
+  --card:          #2b2b2b;
+  --card2:         #333333;
   --accent:        #7B61FF;
   --accent2:       #9B85FF;
   --accent-soft:   rgba(123,97,255,0.15);
   --accent-border: rgba(123,97,255,0.3);
-  --green:  #4CD964;
-  --red:    #FF3B30;
-  --orange: #FF9500;
-  --blue:   #2AABEE;
-  --text:   #FFFFFF;
-  --text2:  #AAAAAA;
-  --text3:  #555555;
-  --divider: rgba(255,255,255,0.06);
-  --r:  20px;
-  --r2: 24px;
+  --green:         #4CD964;
+  --red:           #FF3B30;
+  --orange:        #FF9500;
+  --blue:          #2AABEE;
+  --text:          #FFFFFF;
+  --text2:         #AAAAAA;
+  --text3:         #555555;
+  --divider:       rgba(255,255,255,0.06);
+  --r:             20px;
+  --r2:            24px;
+  --nav-h:         calc(60px + env(safe-area-inset-bottom, 0px));
+  --vh:            100vh;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-html, body {
-  height: 100%;
+html { height: var(--vh); overflow: hidden; }
+
+body {
+  height: var(--vh);
   background: var(--bg);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: var(--text);
@@ -98,29 +79,31 @@ html, body {
   overflow: hidden;
 }
 
+/* LAYOUT */
 .container {
   max-width: 500px;
   margin: 0 auto;
-  padding-top: 12px;
-  padding-bottom: 86px;
-  height: 100%;
+  padding-bottom: var(--nav-h);
+  height: var(--vh);
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .page { display: none; }
 .page.active { display: block; animation: fadeUp 0.2s ease; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
 
-.spacer { height: 8px; }
+.spacer { height: 12px; }
 
+/* SECTION */
 .section-label {
   padding: 10px 16px 5px;
   font-size: 13px; font-weight: 600;
   color: var(--text2);
   text-transform: uppercase; letter-spacing: 0.5px;
 }
-
 .section {
   background: var(--card);
   border-radius: var(--r2);
@@ -135,9 +118,7 @@ html, body {
   border-radius: var(--r2);
   margin: 8px 12px;
   overflow: hidden;
-  transition: transform 0.1s;
 }
-.key-card:active { transform: scale(0.99); }
 .key-card-top { padding: 16px; display: flex; align-items: center; gap: 13px; }
 .key-icon {
   width: 48px; height: 48px; border-radius: 16px;
@@ -317,29 +298,63 @@ html, body {
 .faq-item.open .faq-ans { max-height: 200px; }
 .faq-ans-inner { padding: 0 16px 14px; font-size: 14px; color: var(--text2); line-height: 1.65; }
 
-/* BOTTOM NAV */
+/* ============ BOTTOM NAV ============ */
 .bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: rgba(28,28,28,0.97);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--divider);
-  border-radius: var(--r2) var(--r2) 0 0;
-  display: flex; justify-content: space-around;
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 16px));
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--nav-h);
+  background: #141414;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding-top: 6px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   z-index: 100;
 }
+
 .nav-btn {
-  background: none; border: none; color: var(--text3);
-  font-size: 10px; font-weight: 500; font-family: 'Inter', sans-serif;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  cursor: pointer; transition: color 0.15s; padding: 4px 14px; line-height: 1;
+  background: none; border: none;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer; padding: 6px 12px;
+  position: relative; flex: 1;
+  font-family: 'Inter', sans-serif;
+  transition: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.nav-icon-wrap { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
-.nav-btn.active { color: var(--accent2); }
+
+.nav-icon {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  transition: background 0.2s;
+  color: var(--text3);
+}
+.nav-btn.active .nav-icon {
+  color: var(--accent2);
+}
+
+.nav-label {
+  font-size: 10px; font-weight: 500;
+  color: var(--text3);
+  transition: color 0.2s;
+  line-height: 1;
+}
+.nav-btn.active .nav-label { color: var(--accent2); }
+
+/* Dot indicator on active tab */
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent2);
+}
 
 /* TOAST */
 .toast {
-  position: fixed; bottom: 100px; left: 50%;
+  position: fixed; bottom: calc(var(--nav-h) + 14px); left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: #3a3a3a; color: #fff;
   padding: 11px 22px; border-radius: 30px;
@@ -357,7 +372,7 @@ html, body {
 
 <div class="container">
 
-  <!-- VPN -->
+  <!-- VPN PAGE -->
   <div id="vpnPage" class="page active">
     <div class="section-label">Мои ключи</div>
 
@@ -420,7 +435,7 @@ html, body {
     <div class="spacer"></div>
   </div>
 
-  <!-- WALLET -->
+  <!-- WALLET PAGE -->
   <div id="walletPage" class="page">
     <div class="balance-block">
       <div class="balance-lbl">Баланс кошелька</div>
@@ -476,7 +491,7 @@ html, body {
     <div class="spacer"></div>
   </div>
 
-  <!-- REF -->
+  <!-- REF PAGE -->
   <div id="refPage" class="page">
     <div class="section">
       <div class="ref-stats">
@@ -503,7 +518,7 @@ html, body {
     <div class="spacer"></div>
   </div>
 
-  <!-- FAQ -->
+  <!-- FAQ PAGE -->
   <div id="faqPage" class="page">
     <div class="section">
       <div class="faq-item" onclick="toggleFaq(this)">
@@ -537,50 +552,53 @@ html, body {
 </div>
 
 <!-- BOTTOM NAV -->
-<div class="bottom-nav">
+<nav class="bottom-nav">
   <button onclick="showPage('vpnPage',this)" class="nav-btn active">
-    <div class="nav-icon-wrap">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <path d="M13 3C13 3 7 8 7 14a6 6 0 0 0 12 0c0-6-6-11-6-11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-        <circle cx="13" cy="14" r="2.5" fill="currentColor" opacity="0.9"/>
-        <path d="M10 21.5l-1.5 1.5M16 21.5l1.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <div class="nav-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 2C12 2 6 7.5 6 13a6 6 0 0 0 12 0c0-5.5-6-11-6-11z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <circle cx="12" cy="13" r="2.2" fill="currentColor" opacity="0.85"/>
+        <path d="M9.5 19.5L8 21M14.5 19.5L16 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </div>
-    VPN
+    <span class="nav-label">VPN</span>
   </button>
+
   <button onclick="showPage('walletPage',this)" class="nav-btn">
-    <div class="nav-icon-wrap">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <rect x="3" y="7" width="20" height="13" rx="4" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M3 11h20" stroke="currentColor" stroke-width="1.6"/>
-        <rect x="16" y="14" width="4" height="3" rx="1.5" fill="currentColor"/>
-        <path d="M7 7V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.6"/>
+    <div class="nav-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="6" width="20" height="13" rx="3.5" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M2 10h20" stroke="currentColor" stroke-width="1.7"/>
+        <rect x="15" y="13" width="4" height="2.5" rx="1.2" fill="currentColor"/>
+        <path d="M6 6V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="1.7"/>
       </svg>
     </div>
-    Кошелёк
+    <span class="nav-label">Кошелёк</span>
   </button>
+
   <button onclick="showPage('refPage',this)" class="nav-btn">
-    <div class="nav-icon-wrap">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <circle cx="10" cy="9" r="3.5" stroke="currentColor" stroke-width="1.6"/>
-        <circle cx="18" cy="10.5" r="2.8" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M4 21c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <path d="M18 15.5c1.9 0 3.5 1.6 3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <div class="nav-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="9.5" cy="8" r="3.2" stroke="currentColor" stroke-width="1.7"/>
+        <circle cx="17" cy="9.5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M3.5 20c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M17 14.5c1.9 0 3.5 1.4 3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
     </div>
-    Реф. прог.
+    <span class="nav-label">Реф. прог.</span>
   </button>
+
   <button onclick="showPage('faqPage',this)" class="nav-btn">
-    <div class="nav-icon-wrap">
-      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-        <circle cx="13" cy="13" r="10" stroke="currentColor" stroke-width="1.6"/>
-        <path d="M10.5 10.5a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        <circle cx="13" cy="18" r="0.9" fill="currentColor"/>
+    <div class="nav-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.7"/>
+        <path d="M9.5 9.5a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <circle cx="12" cy="17" r="0.9" fill="currentColor"/>
       </svg>
     </div>
-    FAQ
+    <span class="nav-label">FAQ</span>
   </button>
-</div>
+</nav>
 
 <script>
 function showPage(pageId, el) {
@@ -594,10 +612,11 @@ function showPage(pageId, el) {
 function toggleFaq(el) { el.classList.toggle('open'); }
 
 function setAmt(val, btn) {
-  document.getElementById('amtInput').value = val;
   document.querySelectorAll('.q-btn').forEach(b => b.classList.remove('sel'));
   btn.classList.add('sel');
-  if (val === '') { document.getElementById('amtInput').value = ''; document.getElementById('amtInput').focus(); }
+  const inp = document.getElementById('amtInput');
+  inp.value = val;
+  if (val === '') inp.focus();
 }
 
 function showToast(msg) {
@@ -609,12 +628,7 @@ function showToast(msg) {
 </script>
 
 </body>
-</html>
-"""
-
-
-
-
+</html>"""
 
 
 
