@@ -20,7 +20,7 @@ tg.ready();
 tg.expand();
 
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-if (isMobile && tg.requestFullscreen) {
+if (isMobile && tg.requestFullscreen && !tg.isFullscreen) {
     tg.requestFullscreen();
 }
 
@@ -590,3 +590,4 @@ function showToast(msg) {
 </body>
 </html>
 """
+
